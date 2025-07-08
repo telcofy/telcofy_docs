@@ -74,20 +74,6 @@ const config: Config = {
         },
         {to: '/blog', label: 'Blog', position: 'left'},
         {
-          type: 'dropdown',
-          label: 'Resources',
-          position: 'left',
-          items: [
-{
-  type: 'docSidebar',
-  sidebarId: 'tutorialSidebar',
-  position: 'left',
-  label: 'Documentation',
-},
-{to: '/blog', label: 'Blog', position: 'left'},
-          ],
-        },
-        {
           href: 'https://github.com/telcofy/telcofy_docs',
           label: 'GitHub',
           position: 'right',
@@ -103,14 +89,6 @@ const config: Config = {
             {
               label: 'Getting Started',
               to: '/docs/intro',
-            },
-            {
-              label: 'API Reference',
-              to: '/docs/api',
-            },
-            {
-              label: 'Tutorials',
-              to: '/docs/tutorials',
             },
           ],
         },
