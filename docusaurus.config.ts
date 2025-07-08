@@ -78,18 +78,13 @@ const config: Config = {
           label: 'Resources',
           position: 'left',
           items: [
-            {
-              label: 'API Reference',
-              to: '/docs/api',
-            },
-            {
-              label: 'SDKs',
-              to: '/docs/sdks',
-            },
-            {
-              label: 'Tutorials',
-              to: '/docs/tutorials',
-            },
+{
+  type: 'docSidebar',
+  sidebarId: 'tutorialSidebar',
+  position: 'left',
+  label: 'Documentation',
+},
+{to: '/blog', label: 'Blog', position: 'left'},
           ],
         },
         {
