@@ -53,7 +53,7 @@ Telcofy is a comprehensive platform that helps telecommunications companies:
 
 ### Implementation
 - [Installation Guide](/docs/getting-started)
-- [Configuration](/docs/getting-started#basic-configuration)
+- [Configuration](/docs/getting-started#installation)
 - [API Reference](/docs/api/quickstart)
 
 ### Use Cases

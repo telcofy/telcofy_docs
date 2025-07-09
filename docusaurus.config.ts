@@ -5,7 +5,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 const config: Config = {
   title: 'Telcofy Documentation',
   tagline: 'Transform Telco Data into Value - EU Compliance & Analytics Platform',
-  favicon: 'img/telcofyPin.png',
+  favicon: 'img/logos/favicon_io/favicon-32x32.png',
 
   url: 'https://telcofy.github.io',
   baseUrl: '/telcofy_docs/',
