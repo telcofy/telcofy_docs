@@ -1,0 +1,10 @@
+{
+  "label": "Support",
+  "position": 7,
+  "link": {
+    "type": "generated-index",
+    "title": "Support",
+    "description": "Get help with Telcofy",
+    "slug": "/support"
+  }
+}

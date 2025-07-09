@@ -1,30 +1,163 @@
 /**
- * Any CSS included here will be global. The classic template
- * bundles Infima by default. Infima is a CSS framework designed to
- * work well for content-centric websites.
+ * Telcofy custom styles
  */
 
-/* You can override the default Infima variables here. */
+/* Import Poppins font */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+/* Telcofy Brand Colors */
 :root {
-  --ifm-color-primary: #2e8555;
-  --ifm-color-primary-dark: #29784c;
-  --ifm-color-primary-darker: #277148;
-  --ifm-color-primary-darkest: #205d3b;
-  --ifm-color-primary-light: #33925d;
-  --ifm-color-primary-lighter: #359962;
-  --ifm-color-primary-lightest: #3cad6e;
+  --telcofy-seafoam: #4CAF50;
+  --telcofy-eu-blue: #1E1E1E;
+  --telcofy-light-gray: #F8F9FA;
+  --telcofy-dark-gray: #1F2937;
+  
+  /* Override Docusaurus defaults with Telcofy colors */
+  --ifm-color-primary: #4CAF50;
+  --ifm-color-primary-dark: #43A047;
+  --ifm-color-primary-darker: #3E8F42;
+  --ifm-color-primary-darkest: #2E7D32;
+  --ifm-color-primary-light: #66BB6A;
+  --ifm-color-primary-lighter: #81C784;
+  --ifm-color-primary-lightest: #A5D6A7;
+  
+  /* Secondary color (EU Blue) */
+  --ifm-color-secondary: #002D63;
+  --ifm-color-secondary-dark: #002959;
+  --ifm-color-secondary-darker: #002755;
+  --ifm-color-secondary-darkest: #001F45;
+  --ifm-color-secondary-light: #00316D;
+  --ifm-color-secondary-lighter: #003371;
+  --ifm-color-secondary-lightest: #003B81;
+  
   --ifm-code-font-size: 95%;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+  --ifm-font-family-base: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --docusaurus-highlighted-code-line-bg: rgba(113, 238, 184, 0.1);
+  
+  /* Navbar */
+  --ifm-navbar-background-color: rgba(255, 255, 255, 0.8);
+  --ifm-navbar-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  
+  /* Hero gradient matching landing page */
+  --telcofy-hero-gradient: linear-gradient(135deg, #002D63 0%, #71EEB8 100%);
 }
 
-/* For readability concerns, you should choose a lighter palette in dark mode. */
+/* Dark mode adjustments */
 [data-theme='dark'] {
-  --ifm-color-primary: #25c2a0;
-  --ifm-color-primary-dark: #21af90;
-  --ifm-color-primary-darker: #1fa588;
-  --ifm-color-primary-darkest: #1a8870;
-  --ifm-color-primary-light: #29d5b0;
-  --ifm-color-primary-lighter: #32d8b4;
-  --ifm-color-primary-lightest: #4fddbf;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+  --ifm-color-primary: #4CAF50;
+  --ifm-color-primary-dark: #43A047;
+  --ifm-color-primary-darker: #3E8F42;
+  --ifm-color-primary-darkest: #2E7D32;
+  --ifm-color-primary-light: #66BB6A;
+  --ifm-color-primary-lighter: #81C784;
+  --ifm-color-primary-lightest: #A5D6A7;
+  --docusaurus-highlighted-code-line-bg: rgba(76, 175, 80, 0.2);
+  --ifm-background-color: #1a1a1a;
+}
+
+/* Navbar styling to match landing page */
+.navbar {
+  backdrop-filter: blur(12px);
+  background-color: var(--ifm-navbar-background-color);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.navbar__title {
+  font-weight: 700;
+  font-size: 1.875rem;
+}
+
+/* Telcofy branded button */
+.button--telcofy {
+  background-color: var(--telcofy-seafoam);
+  color: white;
+  border: none;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.button--telcofy:hover {
+  background-color: var(--ifm-color-primary-dark);
+  transform: scale(1.05);
+}
+
+/* EU Compliance button */
+.button--eu-compliance {
+  background-color: #3B82F6;
+  color: white;
+  border: none;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.button--eu-compliance:hover {
+  background-color: #2563EB;
+  transform: scale(1.05);
+}
+
+/* Hero section styling */
+.hero--telcofy {
+  background-color: var(--telcofy-eu-blue);
+  color: white;
+  padding: 4rem 0;
+}
+
+/* Card styling matching landing page */
+.card {
+  background: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+/* Code blocks with Telcofy accent */
+.prism-code {
+  border-left: 3px solid var(--telcofy-seafoam);
+}
+
+/* Footer styling */
+.footer {
+  background-color: var(--telcofy-dark-gray);
+  color: #9CA3AF;
+}
+
+.footer__title {
+  color: white;
+}
+
+/* Custom badge for EU compliance */
+.badge--eu {
+  background-color: var(--telcofy-eu-blue);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+/* Telcofy feature cards */
+.feature-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+.feature-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.feature-card__icon {
+  width: 3rem;
+  height: 3rem;
+  margin-bottom: 1rem;
+  color: var(--telcofy-seafoam);
 }
