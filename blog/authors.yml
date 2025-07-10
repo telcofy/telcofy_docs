@@ -1,12 +1,10 @@
 oslo-research-team:
-  name: Yangshun Tay
-  title: Ex-Meta Staff Engineer, Co-founder GreatFrontEnd
-  url: https://linkedin.com/in/yangshun
+  name: David Crompton
+  title: Co-Founder, Cheif Operating Officer, and Data Scientist
+  url: https://www.linkedin.com/in/davidcrompton/
   image_url: https://github.com/yangshun.png
   page: true
   socials:
-    x: yangshunz
-    linkedin: yangshun
-    github: yangshun
-    newsletter: https://www.greatfrontend.com
+    linkedin: davidcrompton
+
 

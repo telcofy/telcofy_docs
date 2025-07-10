@@ -6,6 +6,18 @@ const sidebars: SidebarsConfig = {
     'getting-started',
     {
       type: 'category',
+      label: 'Methodology',
+      items: [
+        'methodology/index',
+        'methodology/data-pipeline',
+        'methodology/privacy-anonymization',
+        'methodology/eu-compliance',
+        'methodology/analytics-insights',
+        'methodology/quality-assurance',
+      ],
+    },
+    {
+      type: 'category',
       label: 'EU Compliance',
       items: [
         'eu-compliance/index',

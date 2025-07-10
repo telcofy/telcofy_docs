@@ -1,0 +1,16 @@
+.contactSection {
+  padding: 4rem 0;
+  background-color: var(--ifm-background-surface-color);
+}
+
+.profileImage {
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+}
+
+@media screen and (max-width: 996px) {
+  .contactSection {
+    padding: 2rem 0;
+  }
+}

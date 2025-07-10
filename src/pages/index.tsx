@@ -4,9 +4,8 @@ import Link from '@docusaurus/Link';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
 import AnimatedTelcofyPin from '../components/HomepageFeatures/TelcofyPin';
+import ContactSection from '../components/ContactSection';
 import styles from './index.module.css';
-
-const SEAFOAM = '#71EEB8';
 
 function HomepageHeader() {
   const {siteConfig} = useDocusaurusContext();
@@ -47,7 +46,7 @@ export default function Home() {
       description="Transform Telco Data into Value">
       <HomepageHeader />
       <main>
-        {/* Add feature sections here if needed */}
+        <ContactSection />
       </main>
     </Layout>
   );
