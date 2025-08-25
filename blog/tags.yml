@@ -1,5 +1,30 @@
 linkedin:
   label: LinkedIn
   permalink: /linkedin
-  description: Posts related to LinkedIn and professional networking
+  description: Posts shared on LinkedIn
+
+company:
+  label: Company
+  permalink: /company
+  description: Updates about Telcofy and our team
+
+vision:
+  label: Vision
+  permalink: /vision
+  description: Our philosophy and future direction
+
+technology:
+  label: Technology
+  permalink: /technology
+  description: Technical insights and approaches
+
+mobility-science:
+  label: Mobility Science
+  permalink: /mobility-science
+  description: Human mobility research and applications
+
+privacy:
+  label: Privacy
+  permalink: /privacy
+  description: Privacy protection and data ethics
 

@@ -2,7 +2,7 @@
 slug: our-journey-why-we-built-telcofy
 title: Our Journey - Why We Built Telcofy
 authors: [oslo-research-team]
-tags: [linkedin]
+tags: [company, vision, mobility-science, privacy]
 ---
 
 # Our Journey: Why We Built Telcofy
