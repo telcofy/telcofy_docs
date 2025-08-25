@@ -64,28 +64,13 @@ const config: Config = {
           type: 'docSidebar',
           sidebarId: 'tutorialSidebar',
           position: 'left',
-          label: 'Documentation',
-        },
-        {
-          to: '/solutions',
-          label: 'Solutions',
-          position: 'left'
-        },
-        {
-          to: '/features', 
-          label: 'Features',
-          position: 'left'
+          label: 'Documentation 🚧',
         },
         {to: '/blog', label: 'Blog', position: 'left'},
         {
           href: 'https://github.com/telcofy',
           label: 'GitHub',
           position: 'right',
-        },
-        {
-          type: 'html',
-          position: 'right',
-          value: '<a href="/contact" class="button button--telcofy">Get Started</a>',
         },
       ],
     },
