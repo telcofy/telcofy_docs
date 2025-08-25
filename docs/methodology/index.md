@@ -21,5 +21,5 @@ Please check back soon for updates.
 ## Contact Us
 
 For immediate assistance or questions about our methodology:
-- 📧 Email: [support@telcofy.com](mailto:support@telcofy.com)
+- 📧 Email: tom@telcofy.com
 - 🐙 GitHub: [github.com/telcofy](https://github.com/telcofy)

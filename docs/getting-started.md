@@ -3,30 +3,22 @@ sidebar_position: 2
 title: Getting Started
 ---
 
-# Getting Started with Telcofy
+# 🚧 Getting Started - Under Construction 🚧
 
-Get your Telcofy platform up and running in minutes.
+This section is currently being updated with the latest installation and setup instructions.
 
-## Prerequisites
+## Coming Soon
 
-Before you begin, ensure you have:
+We're preparing comprehensive guides for:
+- Installation procedures
+- Initial configuration
+- Quick start tutorials
+- Best practices
 
-- Access to your telco data sources
-- Administrative privileges for your infrastructure
-- Basic understanding of data pipelines
+Please check back soon for updates.
 
-## Installation
+## Contact Us
 
-### Option 1: Cloud Deployment
-
-```bash
-# Clone the Telcofy deployment repository
-git clone https://github.com/telcofy/telcofy-deploy.git
-cd telcofy-deploy
-
-# Configure your environment
-cp .env.example .env
-# Edit .env with your configuration
-
-# Deploy to your cloud provider
-./deploy.sh --provider=aws --region=eu-west-1
+For immediate assistance with getting started:
+- 📧 Email: tom@telcofy.com
+- 🐙 GitHub: [github.com/telcofy](https://github.com/telcofy)

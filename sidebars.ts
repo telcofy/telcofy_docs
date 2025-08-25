@@ -9,11 +9,6 @@ const sidebars: SidebarsConfig = {
       label: 'Methodology',
       items: [
         'methodology/index',
-        'methodology/data-pipeline',
-        'methodology/privacy-anonymization',
-        'methodology/eu-compliance',
-        'methodology/analytics-insights',
-        'methodology/quality-assurance',
       ],
     },
     {
