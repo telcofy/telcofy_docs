@@ -1,5 +1,5 @@
 linkedin:
   label: LinkedIn
-  permalink: https://www.linkedin.com/search/results/all/?fetchDeterministicClustersOnly=true&heroEntityKey=urn%3Ali%3Aorganization%3A106959229&keywords=telcofy%20as&origin=RICH_QUERY_SUGGESTION&position=0&searchId=c8a345d6-feb0-459e-882a-95367727dd17&sid=8n%3B&spellCorrectionEnabled=false
-  description: Telcofy's linkedin page
+  permalink: /linkedin
+  description: Posts related to LinkedIn and professional networking
 
