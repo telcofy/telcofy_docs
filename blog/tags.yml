@@ -1,19 +1,5 @@
-facebook:
-  label: Facebook
-  permalink: /facebook
-  description: Facebook tag description
+linkedin:
+  label: LinkedIn
+  permalink: https://www.linkedin.com/search/results/all/?fetchDeterministicClustersOnly=true&heroEntityKey=urn%3Ali%3Aorganization%3A106959229&keywords=telcofy%20as&origin=RICH_QUERY_SUGGESTION&position=0&searchId=c8a345d6-feb0-459e-882a-95367727dd17&sid=8n%3B&spellCorrectionEnabled=false
+  description: Telcofy's linkedin page
 
-hello:
-  label: Hello
-  permalink: /hello
-  description: Hello tag description
-
-docusaurus:
-  label: Docusaurus
-  permalink: /docusaurus
-  description: Docusaurus tag description
-
-hola:
-  label: Hola
-  permalink: /hola
-  description: Hola tag description

@@ -2,7 +2,7 @@
 slug: enhanced-dasymetric-mapping-oslo
 title: Revolutionizing Urban Activity Mapping with Mobile Phone Data
 authors: [oslo-research-team]
-tags: [facebook]
+tags: [linkedin]
 ---
 
 Have you ever wondered where people actually spend their time in a city? Not just where they live, but where they work, shop, exercise, and socialize? We're excited to introduce our groundbreaking research on Enhanced Dasymetric Mapping, which transforms how we understand human activity patterns in Oslo using mobile phone data.
