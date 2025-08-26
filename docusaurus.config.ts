@@ -33,7 +33,6 @@ const config: Config = {
         },
         blog: {
           showReadingTime: true,
-          editUrl: 'https://github.com/telcofy/telcofy_docs/tree/main/',
           feedOptions: {
             type: 'all',
             copyright: `Copyright © ${new Date().getFullYear()} Telcofy.`,
