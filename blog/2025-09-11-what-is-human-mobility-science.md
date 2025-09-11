@@ -1,7 +1,7 @@
 ---
 slug: what-is-human-mobility-science
 title: What Is Human Mobility Science? The Hidden Science That Shapes Our World
-authors: [david-crompton]
+authors: [tom]
 tags: [mobility-science, data-science, urban-planning, privacy]
 ---
 
