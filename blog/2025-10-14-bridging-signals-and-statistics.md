@@ -1,6 +1,6 @@
 ---
 slug: bridging-signals-and-statistics-oecd-conference
-title: Bridging Signals and Statistics: Reflections from the OECD MNO-MINDS Conference in Paris
+title: "Bridging Signals and Statistics: Reflections from the OECD MNO-MINDS Conference in Paris"
 authors: [tormod]
 tags: [mobility-science, data-science, technology, company, vision]
 date: 2025-10-14
