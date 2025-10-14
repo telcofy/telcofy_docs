@@ -1,8 +1,9 @@
 ---
 slug: bridging-signals-and-statistics-oecd-conference
-title: Bridging Signals and Statistics
-authors: [oslo-research-team]
+title: Bridging Signals and Statistics: Reflections from the OECD MNO-MINDS Conference in Paris
+authors: [tormod]
 tags: [mobility-science, data-science, technology, company, vision]
+date: 2025-10-14
 ---
 
 # Bridging Signals and Statistics: Reflections from the OECD MNO-MINDS Conference in Paris
@@ -100,4 +101,9 @@ The signal is strong — but the connection between technology, methodology, and
 That’s precisely the intersection where Telcofy operates:
 bridging telecom data, statistical rigor, and real-world usability through efficient, transparent pipelines.
 
-As Europe prepares for its next wave of Trusted Smart Statistics, we’re proud to be among the few shaping not just the discussion — but the infrastructure to make it real.
+As Europe prepares for its next wave of Trusted Smart Statistics, we're proud to be among the few shaping not just the discussion — but the infrastructure to make it real.
+
+---
+
+**Keywords:**
+Mobile Network Operator Data · Official Statistics · Eurostat · Mobility Analytics · Trusted Smart Statistics · Cost-Efficient Data Pipeline · Human Mobility Science · Telcofy
