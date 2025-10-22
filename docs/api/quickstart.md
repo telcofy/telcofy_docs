@@ -1,3 +1,5 @@
+To obtain Telcofy API access you need a valid contract; contact sales at tom@telcofy.ai.
+
 # Telcofy Data Access Quickstart
 
 Use this quickstart to exchange your Telcofy machine-account API key for an OAuth
