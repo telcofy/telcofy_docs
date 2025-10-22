@@ -7,8 +7,8 @@ const config: Config = {
   tagline: 'Transform Telco Data into Value - EU Compliance & Analytics Platform',
   favicon: 'img/logos/favicon_io/favicon-32x32.png',
 
-  url: 'https://telcofy.github.io',
-  baseUrl: '/telcofy_docs/',
+  url: 'https://docs.telcofy.ai',
+  baseUrl: '/',
 
   organizationName: 'telcofy',
   projectName: 'telcofy_docs',
