@@ -19,6 +19,15 @@ const sidebars: SidebarsConfig = {
         // Add more items here as you create them
       ],
     },
+    {
+      type: 'category',
+      label: 'API Reference',
+      items: [
+        'api/quickstart',
+        'api/authentication',
+        'api/endpoints',
+      ],
+    },
     // Commented out sections - uncomment as you create the docs
     /*
     {
@@ -39,16 +48,6 @@ const sidebars: SidebarsConfig = {
         'analytics/dashboard',
         'analytics/custom-queries',
         'analytics/visualizations',
-      ],
-    },
-    {
-      type: 'category',
-      label: 'API Reference',
-      items: [
-        'api/quickstart',
-        'api/authentication',
-        'api/endpoints',
-        'api/webhooks',
       ],
     },
     {
