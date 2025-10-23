@@ -1,0 +1,10 @@
+{
+  "label": "Analytics",
+  "position": 5,
+  "link": {
+    "type": "generated-index",
+    "title": "Analytics",
+    "description": "Analytics features and capabilities",
+    "slug": "/analytics"
+  }
+}

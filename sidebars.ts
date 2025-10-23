@@ -28,6 +28,14 @@ const sidebars: SidebarsConfig = {
         'api/endpoints',
       ],
     },
+    {
+      type: 'category',
+      label: 'Data Access',
+      items: [
+        'data-access/overview',
+        'data-access/analytical-hub',
+      ],
+    },
     // Commented out sections - uncomment as you create the docs
     /*
     {
