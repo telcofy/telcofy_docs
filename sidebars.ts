@@ -30,7 +30,7 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
-      label: 'Data Access',
+      label: 'Data Delivery',
       items: [
         'data-access/overview',
         'data-access/analytical-hub',
