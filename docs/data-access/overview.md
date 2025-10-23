@@ -2,7 +2,7 @@
 sidebar_position: 1
 ---
 
-# Analytics Overview
+# Data Delivery Methods Overview
 
 Telcofy offers several pathways to explore, export, and integrate telecom insights. Choose the delivery mechanism that best fits your workflow, whether you prefer file-based exploration, SQL-driven analysis, or near-real-time API calls.
 

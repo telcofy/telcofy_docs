@@ -4,7 +4,7 @@ sidebar_position: 2
 
 # Analytical Hub
 
-Telcofy distributes curated telecom intelligence as reusable BigQuery data exchanges. By leveraging [Analytics Hub](https://cloud.google.com/bigquery/docs/analytics-hub-introduction), you can subscribe to governed datasets directly inside Google Cloud, eliminating the overhead of manual data copies and keeping all consumers aligned on a single, auto-updating source of truth.
+Telcofy distributes curated telecom intelligence as reusable BigQuery data exchanges. By leveraging [Googele Bigquery Analytics Hub](https://cloud.google.com/bigquery/docs/analytics-hub-introduction), you can subscribe to governed datasets directly inside Google Cloud, eliminating the overhead of manual data copies and keeping all consumers aligned on a single, auto-updating source of truth.
 
 ## Why use Analytics Hub listings
 
