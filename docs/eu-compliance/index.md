@@ -38,12 +38,10 @@ Eurostat’s **Multi-MNO** programme (service contract ESTAT 2021.0400) delive
 
 The full documentation set is available via Eurostat’s portal: [D2.3 – Methodology, requirements, use cases and methods](https://cros.ec.europa.eu/book-page/methodology-framework-high-level-architecture-requirements-use-cases-and-methods).
 
-| Deliverable | Focus | Telcofy alignment |
-|-------------|-------|-------------------|
-| [D2.3 Vol. I](https://cros.ec.europa.eu/group/6/files/2655/download) | Conceptual & methodological framework | See [Methodological Framework](./methodological-framework.md) |
-| [D2.3 Vol. II](https://cros.ec.europa.eu/group/6/files/2656/download) | Statistical use cases | See [Use Cases](./use-cases.md) |
-| [D2.3 Vol. III](https://cros.ec.europa.eu/group/6/files/2657/download) | Methods & data objects | See [Methods & Data Objects](./methods.md) |
-| [D3.3](https://cros.ec.europa.eu/group/6/files/2658/download) | Quality framework & testing | [Quality artefacts](./quality.md) catalogued alongside module outputs   |
-| [D4.4](https://cros.ec.europa.eu/group/6/files/2659/download) | Software releases & documentation | Reflected in [Codebase & Orchestration](./codebase-overview.md) |
+- **D2.3 Vol. I** — Conceptual & methodological framework ([download](https://cros.ec.europa.eu/group/6/files/2655/download)); see [Methodological Framework](./methodological-framework.md).
+- **D2.3 Vol. II** — Statistical use cases ([download](https://cros.ec.europa.eu/group/6/files/2656/download)); see [Use Cases](./use-cases.md).
+- **D2.3 Vol. III** — Methods & data objects ([download](https://cros.ec.europa.eu/group/6/files/2657/download)); see [Methods & Data Objects](./methods.md).
+- **D3.3** — Business process & quality framework ([download](https://cros.ec.europa.eu/group/6/files/2658/download)); Telcofy’s adoption is summarised in [Quality Framework](./quality.md).
+- **D4.4** — Software releases & documentation ([download](https://cros.ec.europa.eu/group/6/files/2659/download)); reflected in [Codebase & Orchestration](./codebase-overview.md).
 
 Use the linked pages to dive deeper into each aspect. Together they provide the traceability auditors expect when validating Telcofy’s EU compliance posture.

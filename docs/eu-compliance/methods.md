@@ -118,16 +118,9 @@ metres from the mast because tiles directly underneath have larger elevation off
 *Source: MultiMNO D2.3 Vol. III, Figure 4.*
 
 ![Intersection of MNO tiles with project tiles (Equation 1 in D2.3)](/img/eu-compliance/methods-module3-fig5.png)
-*Source: MultiMNO D2.3 Vol. III, Figure 5.* The graphic demonstrates Equation 1: intersect each MNO tile with the
-`project_grid_cell`, compute the overlap area `A_{ij}`, and aggregate the MNO strengths `SE_j` into the project
-tile `i` via
-
-$$
-S_i = \sum_{j=1}^{m} \frac{A_{ij}}{A_T} \, SE_j,
-$$
-
-where `n` is the number of project tiles touched by the footprint, `m` the number of MNO tiles overlapping tile
-`i`, `A_T` the area of tile `i`, and `SE_j` the MNO-provided strength.
+*Source: MultiMNO D2.3 Vol. III, Figure 5.* The graphic demonstrates Equation 1 (below): intersect each MNO tile
+with the `project_grid_cell`, compute the overlap area `A_{ij}`, and aggregate the MNO strengths `SE_j` into the
+project tile `i`.
 
 #### 3.3 Precomputed signal-strength tiles
 
