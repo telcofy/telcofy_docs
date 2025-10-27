@@ -6,7 +6,7 @@ sidebar_position: 1
 
 Telcofy offers several pathways to explore, export, and integrate telecom insights. Choose the delivery mechanism that best fits your workflow, whether you prefer file-based exploration, SQL-driven analysis, or near-real-time API calls.
 
-All Telcofy data products can be accessed and configured through the [Telcofy Console](https://app.telcofy.ai). If you do not yet have console access, reach out to [tom@telcofy.ai](mailto:tom@telcofy.ai) to request a trial.
+All Telcofy data products can be accessed and configured through the [Telcofy CityOS](https://app.telcofy.ai). If you do not yet have console access, reach out to [tom@telcofy.ai](mailto:tom@telcofy.ai) to request a trial.
 
 Telcofy curates two product families:
 
