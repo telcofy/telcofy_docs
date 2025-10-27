@@ -21,6 +21,14 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
+      label: 'Data Delivery',
+      items: [
+        'data-access/overview',
+        'data-access/analytical-hub',
+      ],
+    },
+    {
+      type: 'category',
       label: 'API Reference',
       items: [
         'api/quickstart',
@@ -28,14 +36,7 @@ const sidebars: SidebarsConfig = {
         'api/endpoints',
       ],
     },
-    {
-      type: 'category',
-      label: 'Data Delivery',
-      items: [
-        'data-access/overview',
-        'data-access/analytical-hub',
-      ],
-    },
+    
     // Commented out sections - uncomment as you create the docs
     /*
     {
