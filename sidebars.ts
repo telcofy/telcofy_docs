@@ -3,7 +3,14 @@ import type {SidebarsConfig} from '@docusaurus/plugin-content-docs';
 const sidebars: SidebarsConfig = {
   tutorialSidebar: [
     'index',
-    'getting-started',
+    //'getting-started',
+    {
+      type: 'category',
+      label: 'Products',
+      items: [
+        'products/index',
+      ],
+    },
     {
       type: 'category',
       label: 'Methodology',
