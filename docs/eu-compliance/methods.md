@@ -1,10 +1,13 @@
+---
 sidebar_position: 4
-title: MultiMNO Methods (D2.3 Vol. III)
+title: MultiMNO Methods
 ---
 
 # Core Methods and Data Objects
 
 Eurostat’s Deliverable **[D2.3 Volume III](https://cros.ec.europa.eu/group/6/files/2657/download)** documents the algorithms, quality checks, and data contracts that make up the MultiMNO reference pipeline. The volume specifies, in detail, the full set of methods and data objects developed for four core use cases: Present Population Estimation, M-Usual Environment Indicators, M-Home Location Indicators, and Internal Migration. These methods sit underneath the framework (Vol. I) and use case catalogue (Vol. II) already summarised in this section of the docs. Telcofy keeps the same modular structure so that regulators can trace every output back to an ESS-aligned procedure. (Additional background is available via the [CROS deliverables overview](https://cros.ec.europa.eu/book-page/methodology-framework-high-level-architecture-requirements-use-cases-and-methods).)
+
+- *M-Home Location Indicators*: derived from long-term permanence outputs, this pipeline labels each device’s de facto residence, aggregates counts to grids or administrative areas, and attaches quality/confidence scores plus change flags so downstream processes (e.g., internal migration) can quantify relocations.
 
 ## 1. Network topology & coverage modules
 
@@ -53,9 +56,8 @@ documented in D2.3; Telcofy implements both.
 
 For small cells or sectors with no directional beam, the received signal strength for cell `a` at grid tile `g` is
 
-$$
-S_{g,a} = S_0 - S_{\text{dist}}\!\left(r_{g,a}\right),
-$$
+
+![Omnidirectional model](/img/eu-compliance/omnidirectional-model.png)
 
 where:
 
@@ -64,9 +66,7 @@ where:
 - `r_{g,a}` is the 3‑D distance between the antenna position and the tile centroid (assuming user devices at ground level).
 - `S_{\text{dist}}(r)` encodes the distance-based attenuation:
 
-$$
-S_{\text{dist}}(r) = 10\,\gamma \log_{10}\!\left(\frac{r}{r_0}\right),
-$$
+
 
 with path-loss exponent `γ` describing reflections, diffraction, and clutter (default γ = 2 for free space, configurable for urban/rural scenes).
 
@@ -80,19 +80,15 @@ width, and `β_a` the vertical 3 dB width. Define:
 
 The directional signal model becomes
 
-$$
-S_{g,a} = S_0 - S_{\text{dist}}\!\left(r_{g,a}\right)
-          - S_{\text{azi}}\!\left(\delta_{g,a}\right)
-          - S_{\text{elev}}\!\left(\varepsilon_{g,a}\right),
-$$
+
+![Directional model](/img/eu-compliance/directional-model.png)
 
 where `S_{\text{azi}}` and `S_{\text{elev}}` are Gaussian-shaped attenuation functions calibrated so that the loss
 reaches 3 dB at `φ_a ± α_a/2` and `θ_a ± β_a/2`, respectively. D2.3 derives these functions by solving for the
 parameters `c` and `σ` in
 
-$$
-S_{\text{angle}}(x) = c \exp\!\left(-\frac{x^2}{2\sigma^2}\right),
-$$
+
+![Gaussian attenuation curve](/img/eu-compliance/gaussian-formula.png)
 
 subject to the 3 dB constraints for each plane.
 
@@ -125,13 +121,11 @@ project tile `i`.
 #### 3.3 Precomputed signal-strength tiles
 
 When the operator already supplies gridded signal strengths, Module 3 reprojects them. For each project tile `i`,
-intersecting with `n` MNO tiles, the blended signal is:
+intersecting with `n` MNO tiles, the blended signal is obtained using Equation 1 (below).
 
-$$
-S_i = \sum_{j=1}^{m}\frac{A_{ij}}{A_T}\,S_j,
-$$
+![Equation 1](/img/eu-compliance/equation-1.png)
 
-where `A_{ij}` is the overlap area between project tile `i` and MNO tile `j`, `A_T` is the area of tile `i`, and `S_j`
+Here `A_{ij}` is the overlap area between project tile `i` and MNO tile `j`, `A_T` is the area of tile `i`, and `S_j`
 is the strength attached to MNO tile `j`.
 
 ### Module 4 — Cell footprint estimation
@@ -141,17 +135,13 @@ cell’s relative suitability at tile `g`. D2.3 offers two transformation famili
 
 - **Linear**
 
-$$
-s(g,a) = \max\Bigl(0, \min\bigl(1, \frac{S(g,a) - S_{\min}}{S_{\max} - S_{\min}}\bigr)\Bigr),
-$$
+![Linear transformation illustration](/img/eu-compliance/linear-transformation.png)
 
 with default `S_{\min} = -130 \text{dBm}` and `S_{\max} = -50 \text{dBm}`.
 
 - **Logistic**
 
-$$
-s(g,a) = \frac{1}{1 + \exp\!\bigl(-S_{\text{steep}}\,(S(g,a)-S_{\text{mid}})\bigr)},
-$$
+![Logistic transformation illustration](/img/eu-compliance/logistic-transformation.png)
 
 mirroring the “signal dominance” concept in Tennekes & Gootzen (2022). Parameters `S_{\text{steep}}` and
 `S_{\text{mid}}` control the knee of the curve; defaults `(-92.5,\;0.2)` capture typical macro-cell behaviour.
@@ -159,21 +149,13 @@ mirroring the “signal dominance” concept in Tennekes & Gootzen (2022). Param
 To keep the dataset tractable, the module prunes low-utility cells per tile. A simple threshold (e.g. `s < 0.01`) is
 available, but D2.3 recommends keeping only the Top‑`X` cells (default `X = 10`) for each tile:
 
-$$
-s(g,a) =
-\begin{cases}
-    s(g,a) & \text{if } s(g,a) \in \text{Top}_X\{s(g,a')\}_{a'}, \\
-    0      & \text{otherwise.}
-\end{cases}
-$$
+![Top-X pruning example](/img/eu-compliance/topx-pruning.png)
 
 ### Module 5 — Cell connection probability estimation
 
 Footprint values become probabilistic connection weights assuming no load balancing:
 
-$$
-P(a \mid g) = \frac{s(g,a)}{\sum_{a' \in A} s(g,a')},
-$$
+![Connection probability formula](/img/eu-compliance/connection-probability.png)
 
 where `A` is the set of all cells that reach tile `g`. For every tile the probabilities sum to one and serve as priors for
 later Bayesian localisation (Module 6). The outputs are stored as `Cell Connection Probabilities [INTERMEDIATE RESULTS]`.

@@ -16,7 +16,12 @@ const sidebars: SidebarsConfig = {
       label: 'EU Compliance',
       items: [
         'eu-compliance/index',
-        // Add more items here as you create them
+        'eu-compliance/methodological-framework',
+        'eu-compliance/use-cases',
+        'eu-compliance/methods',
+        'eu-compliance/codebase-overview',
+        'eu-compliance/quality',
+        'eu-compliance/eurostat-pipeline-staypoint-detection',
       ],
     },
     {

@@ -20,8 +20,8 @@ Eurostat’s **Multi-MNO** programme (service contract ESTAT 2021.0400) delive
 
 - **Timeline** — Contract awarded January 2023, concluding mid‑2025 after multi-country pilots with five participating MNOs.
 - **Governance** — Driven by Eurostat’s Directorate ESTAT.A.5 with oversight from the ESS Task Force on MNO data and an external Advisory Board.
-- **Resources** — Public landing page with deliverables and webinars: <https://cros.ec.europa.eu/landing-page/multi-mno-project>.
-- **Tooling** — Open-source code released in 2025 (version 1); ongoing quality framework updates (D3.x) and testing reports (D5.x).
+- **Resources** — Public (landing page)[https://cros.ec.europa.eu/landing-page/multi-mno-project] with deliverables and materials.
+- **Tooling** — Open-source code [D4.4](https://cros.ec.europa.eu/group/6/files/2659/download) released in 2025 (version 1.0) ; ongoing quality framework updates (D3.3)(https://cros.ec.europa.eu/group/6/files/2658/download) and testing reports (D5.2)[https://cros.ec.europa.eu/group/6/files/2661/download].
 
 ## Why it matters for Telcofy
 
@@ -41,7 +41,7 @@ The full documentation set is available via Eurostat’s portal: [D2.3 – Metho
 - **D2.3 Vol. I** — Conceptual & methodological framework ([download](https://cros.ec.europa.eu/group/6/files/2655/download)); see [Methodological Framework](./methodological-framework.md).
 - **D2.3 Vol. II** — Statistical use cases ([download](https://cros.ec.europa.eu/group/6/files/2656/download)); see [Use Cases](./use-cases.md).
 - **D2.3 Vol. III** — Methods & data objects ([download](https://cros.ec.europa.eu/group/6/files/2657/download)); see [Methods & Data Objects](./methods.md).
-- **D3.3** — Business process & quality framework ([download](https://cros.ec.europa.eu/group/6/files/2658/download)); Telcofy’s adoption is summarised in [Quality Framework](./quality.md).
+- **D3.3** — Business process & quality frameworxk ([download](https://cros.ec.europa.eu/group/6/files/2658/download)); Telcofy’s adoption is summarised in [Quality Framework](./quality.md).
 - **D4.4** — Software releases & documentation ([download](https://cros.ec.europa.eu/group/6/files/2659/download)); reflected in [Codebase & Orchestration](./codebase-overview.md).
 
 Use the linked pages to dive deeper into each aspect. Together they provide the traceability auditors expect when validating Telcofy’s EU compliance posture.

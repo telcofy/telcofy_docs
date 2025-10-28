@@ -1,5 +1,6 @@
+---
 sidebar_position: 2
-title: Methodological Framework (D2.3 Vol. I)
+title: Methodological Framework
 ---
 
 # MultiMNO Methodological Framework Summary

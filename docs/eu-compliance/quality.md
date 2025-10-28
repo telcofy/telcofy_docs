@@ -1,6 +1,6 @@
 ---
 sidebar_position: 6
-title: Quality Framework (D3.3)
+title: Quality Framework
 ---
 
 # Quality Assurance for MultiMNO Deliveries

@@ -1,5 +1,6 @@
+---
 sidebar_position: 3
-title: MultiMNO Use Cases (D2.3 Vol. II)
+title: MultiMNO Use Cases
 ---
 
 # MultiMNO Use Case Portfolio
