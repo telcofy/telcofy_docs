@@ -15,5 +15,5 @@ Our comprehensive documentation is being redesigned to better serve your needs. 
 ## Contact Us
 
 For immediate assistance or questions:
-- 📧 Email: tom@telcofy.com
+- 📧 Email: tom@telcofy.ai
 - 🐙 GitHub: [github.com/telcofy](https://github.com/telcofy)
