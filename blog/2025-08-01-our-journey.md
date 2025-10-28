@@ -65,4 +65,4 @@ That's why we built Telcofy. And that's just the beginning.
 
 ---
 
-*Interested in learning more about our approach to telco data analytics? [Contact us](mailto:tom@telcofy.com) or check out our [GitHub](https://github.com/telcofy).*
+*Interested in learning more about our approach to telco data analytics? [Contact us](mailto:tom@telcofy.ai) or check out our [GitHub](https://github.com/telcofy).*

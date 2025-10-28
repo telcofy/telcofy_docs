@@ -21,4 +21,4 @@ A world where mobility data drives smarter cities, better services, and improved
 - **Reliability**: Enterprise-grade solutions you can trust
 - **Partnership**: Your success is our success
 
-[Contact Us →](mailto:info@telcofy.com)
+[Contact Us →](mailto:info@telcofy.ai)

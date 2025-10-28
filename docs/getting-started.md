@@ -20,5 +20,5 @@ Please check back soon for updates.
 ## Contact Us
 
 For immediate assistance with getting started:
-- 📧 Email: tom@telcofy.com
+- 📧 Email: tom@telcofy.ai
 - 🐙 GitHub: [github.com/telcofy](https://github.com/telcofy)

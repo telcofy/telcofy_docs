@@ -1,12 +1,12 @@
 tom:
   name: Tom
   title: Founder & CEO
-  email: tom@telcofy.com
+  email: tom@telcofy.ai
 
 tormod:
   name: Tormod Olson
   title: Co-Founder
-  email: tormod@telcofy.com
+  email: tormod@telcofy.ai
   url: https://www.linkedin.com/in/tormodolsen/
   image_url: https://media.licdn.com/dms/image/v2/C4D03AQESA5yvDUEvGQ/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1644231967634?e=1763596800&v=beta&t=khH9X4nA9BZ6SExhDQepAihZrpDcHITRjUgPO7-5rbc
   page: true

@@ -18,4 +18,4 @@ Real-time insights and visualizations from your network data.
 ### 🤝 Consulting Services
 Expert guidance for implementation and optimization.
 
-[Contact us to learn more →](mailto:info@telcofy.com)
+[Contact us to learn more →](mailto:info@telcofy.ai)

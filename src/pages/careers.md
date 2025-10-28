@@ -26,4 +26,4 @@ Currently, we're looking for talented individuals in:
 - 🤝 Collaborative team environment
 - 📈 Growth opportunities
 
-[Send your CV →](mailto:careers@telcofy.com)
+[Send your CV →](mailto:careers@telcofy.ai)
