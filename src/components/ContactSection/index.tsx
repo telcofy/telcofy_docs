@@ -23,6 +23,8 @@ const contacts = [
 ];
 
 function ContactCard({ contact }) {
+  const imageUrl = useBaseUrl(contact.image);
+
   return (
     <div className="card margin-bottom--lg">
       <div className="card__header">
@@ -30,7 +32,7 @@ function ContactCard({ contact }) {
           <div
             className={`avatar__photo avatar__photo--lg ${styles.profileImage}`}
             style={{
-              backgroundImage: `url(${useBaseUrl(contact.image)})`,
+              backgroundImage: `url(${imageUrl})`,
             }}
             aria-label={`${contact.name} profile`}
           />

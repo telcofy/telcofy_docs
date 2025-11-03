@@ -1,0 +1,65 @@
+---
+sidebar_position: 1
+title: Welcome to Telcofy
+slug: /
+hide_title: true
+---
+
+import AnimatedTelcofyPin from '@site/src/components/HomepageFeatures/TelcofyPin';
+import ContactSection from '@site/src/components/ContactSection';
+import Link from '@docusaurus/Link';
+
+<div style={{
+  background: '#000',
+  color: '#fff',
+  padding: '2rem 2rem',
+  marginBottom: '3rem',
+  marginTop: '1rem',
+  marginLeft: '-2rem',
+  marginRight: '-2rem',
+  textAlign: 'center',
+  borderRadius: '8px'
+}}>
+  <div style={{display: 'flex', justifyContent: 'center', marginBottom: '0.5rem'}}>
+    <AnimatedTelcofyPin width={120} height={120} />
+  </div>
+  <h1 style={{color: '#fff', fontSize: '2rem', marginTop: '0.5rem', marginBottom: '0.5rem'}}>Telcofy Documentation</h1>
+  <p style={{fontSize: '1rem', marginBottom: '0', color: '#ddd'}}>Transform Telco Data into Value - EU Compliance & Analytics Platform</p>
+</div>
+
+---
+
+## Products
+
+- [Telcofy Product Suite](./products/index.md)
+
+## Methodology
+
+- Explore the [methodology section](./methodology/index.md) for analytical frameworks and best practices.
+
+## EU Compliance
+
+Telcofy aligns with Eurostat's MultiMNO standards:
+
+- [EU Compliance overview](./eu-compliance/index.md)
+- [Methodological Framework (Vol. I)](./eu-compliance/methodological-framework.md)
+- [Use Cases (Vol. II)](./eu-compliance/use-cases.md)
+- [Methods & Data Objects (Vol. III)](./eu-compliance/methods.md)
+- [Codebase & Orchestration](./eu-compliance/codebase-overview.md)
+- [Quality Framework](./eu-compliance/quality.md)
+- [Staypoint Detection](./eu-compliance/eurostat-pipeline-staypoint-detection.md)
+
+## Data Delivery
+
+- [Data Delivery Overview](./data-access/overview.md)
+- [Google Bigquery Sharing](./data-access/analytical-hub.md)
+
+## API Reference
+
+- [Quickstart](./api/quickstart.md)
+- [Authentication](./api/authentication.md)
+- [Endpoints](./api/endpoints.md)
+
+---
+
+<ContactSection />

@@ -28,6 +28,7 @@ const config: Config = {
       'classic',
       {
         docs: {
+          routeBasePath: '/',
           sidebarPath: './sidebars.ts',
           editUrl: 'https://github.com/telcofy/telcofy_docs/tree/main/',
         },
