@@ -82,7 +82,7 @@ curl -L -H "Authorization: Bearer $ACCESS_TOKEN" \
 
 ---
 
-## 3. Calling the Data API with an API Key
+## 3. Calling the Admin API with an API Key
 
 Attach your API key to each Data API request using the `x-api-key` header.
 
@@ -134,6 +134,21 @@ curl -s -X POST https://users.api.telcofy.ai/admin/maps \
         "type": "custom_polygon",
         "geometry": "POLYGON((10.7872664 59.8679278, 10.7969259 59.8680208, 10.7969259 59.8701131, 10.7924594 59.8734470, 10.7878905 59.8708231, 10.7872664 59.8679278))"
       }'
+```
+
+Example response:
+
+```json
+{
+  "msg": "Map saved",
+  "id": "2nnuJGDA0axOeuafA0wy",
+  "name": "Customer Zone Alpha",
+  "description": "Example custom zone created via API key",
+  "type": "custom_polygon",
+  "geometry": "POLYGON((10.7872664 59.8679278, 10.7969259 59.8680208, 10.7969259 59.8701131, 10.7924594 59.8734470, 10.7878905 59.8708231, 10.7872664 59.8679278))",
+  "owner": "api-test-user-1-my-dev-key@telcofy-norway-poc.iam.gserviceaccount.com"
+}
+
 ```
 
 **Update a map:**
