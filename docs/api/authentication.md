@@ -17,18 +17,23 @@ Each Telcofy customer receives one or more API keys that represent Google Cloud 
 accounts scoped to the customer’s data.
 
 - Keys are labelled (e.g., `etl-prod`, `pipeline-a`) to distinguish workflows.
-- Store each key in a secure secret manager; the Users API only returns it at creation time.
+- Keys are 64-character hex strings and are shown only once—store them in a secret manager
+  as soon as they are created or rotated.
+- The `service` profile you choose while creating a machine account controls which Google
+  scopes can be minted later (`storage` is the default; use `bigquery` for BigQuery access).
+- Machine accounts are scoped to read artifacts under `gs://telcofy-user-data/results/{USER_ID}/`.
 - Rotation is supported through the Users API. If you do not have the ability to call the
   rotation endpoints directly, contact Telcofy support to request a new key.
 
-| Endpoint | Auth Header | Description |
-| -------- | ----------- | ----------- |
-| `GET /users/:uid/machine-accounts/list` | `X-Api-Key` (contact Telcofy if access is restricted) | View existing labels for your account. |
-| `POST /users/:uid/machine-accounts` | `X-Api-Key` (contact Telcofy if access is restricted) | Create or rotate a machine-account API key. |
-| `POST /login-with-apikey` | `X-Api-Key: <API_KEY>` | Exchange an API key for a 1-hour Google OAuth access token. |
+| Endpoint | Description | Notes |
+| --- | --- | --- |
+| `GET /users/:uid/machine-accounts/list` | View existing machine-account labels and rotation timestamps. | Available to customers with machine-account admin access; otherwise, contact Telcofy support to retrieve this information. |
+| `POST /users/:uid/machine-accounts` | Create or rotate a machine-account API key. | Provide `keyLabel` and optional `service` (`storage` default, `bigquery` for BigQuery access). Telcofy support can run this on your behalf if self-service is not enabled. |
+| `POST /login-with-apikey` | Exchange an API key for a 1-hour Google OAuth access token. | Supports optional `{"service":"bigquery"}` to request the BigQuery scope; defaults to a Cloud Storage read-only scope. |
 
-> **Note:** Many customers manage rotation through Telcofy support. If you do not have the
-> necessary permissions, submit a ticket with the desired `keyLabel`.
+> **Note:** Calling `POST /users/:uid/machine-accounts` with an existing `keyLabel`
+> rotates the key (the previous key is revoked immediately). If you do not have self-service
+> access, submit a ticket with the desired `keyLabel` and `service`.
 
 
 ---
@@ -36,27 +41,42 @@ accounts scoped to the customer’s data.
 ## 2. Exchange the API Key for an OAuth Token
 
 ```bash
-ACCESS_TOKEN=$(curl -s -X POST https://users.api.telcofy.ai/login-with-apikey \
-  -H "x-api-key: $API_KEY" | jq -r .accessToken)
+API_KEY="YOUR_API_KEY"
+LOGIN_RESPONSE=$(curl -s -X POST https://users.api.telcofy.ai/login-with-apikey \
+  -H "x-api-key: $API_KEY")
+ACCESS_TOKEN=$(echo "$LOGIN_RESPONSE" | jq -r .accessToken)
+USER_ID=$(echo "$LOGIN_RESPONSE" | jq -r .userId)
+EXPIRES_AT=$(echo "$LOGIN_RESPONSE" | jq -r .expireTime)
 ```
 
-- Token lifetime: 1 hour.
-- Scope: `https://www.googleapis.com/auth/devstorage.read_only`.
-- Use the token as a bearer credential when calling `gsutil`, the Cloud Storage JSON API,
-  or `google-cloud-storage` clients.
+- Tokens are valid for roughly one hour; check `expireTime` in the response.
+- The default scope is `https://www.googleapis.com/auth/devstorage.read_only`.
+- Provide a JSON body to request a different scope that matches your machine-account
+  profile (for example, `{"service": "bigquery"}` to mint `https://www.googleapis.com/auth/bigquery`).
+
+```bash
+# Request a BigQuery-scoped token
+LOGIN_RESPONSE=$(curl -s -X POST https://users.api.telcofy.ai/login-with-apikey \
+  -H "x-api-key: $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"service":"bigquery"}')
+```
+
+Use the bearer token with Cloud Storage tooling. The examples below rely on the `USER_ID`
+returned by `/login-with-apikey`.
 
 **Example (gsutil):**
 
 ```bash
 gsutil -o "GSUtil:additional_http_headers=Authorization: Bearer $ACCESS_TOKEN" \
-  cp -r gs://telcofy-user-data/results/YOUR_USER_ID/ ./results_YOUR_USER_ID
+  cp -r gs://telcofy-user-data/results/$USER_ID/ ./results_$USER_ID
 ```
 
 **Example (HTTP download):**
 
 ```bash
 curl -L -H "Authorization: Bearer $ACCESS_TOKEN" \
-  "https://storage.googleapis.com/telcofy-user-data/results/YOUR_USER_ID/export.json" \
+  "https://storage.googleapis.com/telcofy-user-data/results/$USER_ID/export.json" \
   -o export.json
 ```
 
@@ -66,19 +86,120 @@ curl -L -H "Authorization: Bearer $ACCESS_TOKEN" \
 
 Attach your API key to each Data API request using the `x-api-key` header.
 
-**Bounding-box geometry query:**
+### Admin Maps (`/admin/maps`)
+
+Admin map endpoints let you store and maintain reusable geometries. These routes live on
+`https://users.api.telcofy.ai` and also use the `x-api-key` header.
+
+| Endpoint | Description | Notes |
+| --- | --- | --- |
+| `GET /admin/maps` | List saved admin maps (custom polygons, grids). | Returns map metadata, including geometry and owning machine account. |
+| `POST /admin/maps` | Create a new admin map. | Provide `name`, `type`, and either `geometry` (WKT) or compatible `ids`. |
+| `PUT /admin/maps/:id` | Update an existing admin map. | Supply only the fields you want to change; geometry updates replace the stored polygon. |
+| `DELETE /admin/maps/:id` | Delete an admin map. | Removes the map from future queries; returns `{ "msg": "Map deleted" }`. |
+
+**List saved maps:**
 
 ```bash
-curl -s "https://data.api.telcofy.ai/maps?geo_type=admin_level_4&lng1=10.70&lat1=59.90&lng2=10.80&lat2=59.95" \
+curl -s https://users.api.telcofy.ai/admin/maps \
   -H "x-api-key: $API_KEY"
 ```
 
-**Synchronous aggregation:**
+Example response:
+
+```json
+{
+  "maps": [
+    {
+      "id": "2nnuJGDA0axOeuafA0wy",
+      "name": "Customer Zone Alpha",
+      "description": "Example custom zone created via API key",
+      "type": "custom_polygon",
+      "geometry": "POLYGON((10.7330245 59.948585, 10.734826 59.948413, 10.736222 59.949133, 10.735642 59.949885, 10.733625 59.94995, 10.732315 59.94924, 10.7330245 59.948585))",
+      "owner": "api-test-user-1-my-dev-key@telcofy-norway-poc.iam.gserviceaccount.com"
+    }
+  ]
+}
+```
+
+**Create a map:**
 
 ```bash
-curl -s "https://data.api.telcofy.ai/data-agg?agg_type=activities&measure=sum_unique_people&start_time=2024-03-01T08:00:00Z&end_time=2024-03-01T09:00:00Z&activity_type=hourly&geo_type=grid_250m&geo_ids=22637506648500" \
+curl -s -X POST https://users.api.telcofy.ai/admin/maps \
+  -H "x-api-key: $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+        "name": "Customer Zone Alpha",
+        "description": "Example custom zone created via API key",
+        "type": "custom_polygon",
+        "geometry": "POLYGON((10.7872664 59.8679278, 10.7969259 59.8680208, 10.7969259 59.8701131, 10.7924594 59.8734470, 10.7878905 59.8708231, 10.7872664 59.8679278))"
+      }'
+```
+
+**Update a map:**
+
+```bash
+curl -s -X PUT https://users.api.telcofy.ai/admin/maps/$MAP_ID \
+  -H "x-api-key: $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+        "name": "Customer Zone Alpha (updated)",
+        "description": "Polygon geometry updated via API key",
+        "type": "custom_polygon",
+        "geometry": "POLYGON((10.761452 59.914762, 10.7654 59.914762, 10.7654 59.916699, 10.760765 59.916699, 10.757761 59.916139, 10.761452 59.914762))"
+      }'
+```
+
+Successful updates return the map ID:
+
+```json
+{ "msg": "Map updated", "id": "svxtowUIKG33pVmbXKBT" }
+```
+
+**Delete a map:**
+
+```bash
+curl -s -X DELETE https://users.api.telcofy.ai/admin/maps/$MAP_ID \
   -H "x-api-key: $API_KEY"
 ```
+
+Example response:
+
+```json
+{ "msg": "Map deleted", "id": "QdZn1VqNBreF1Lyoc9Hj" }
+```
+
+
+### Admin API (`/users`) 
+//UNDER DEVELOPMENT
+
+Some customers manage Telcofy user profiles through the Users Admin API. Each request
+must include your Telcofy API key in the `x-api-key` header.
+
+| Endpoint | Description | Notes |
+| --- | --- | --- |
+| `POST /users` | Create a Telcofy user document. | Provide `id`, `name`, and `role` in the JSON body; responds with the stored record. |
+| `GET /users/:id` | Retrieve a user document. | Returns `404` if the user does not exist. |
+| `PUT /users/:id` | Update a user document. | Applies the supplied JSON fields; unspecified fields are left untouched. |
+| `DELETE /users/:id` | Delete a user document. | Responds with `{ "msg": "User deleted" }` when successful. |
+
+**Example (create a user):**
+
+```bash
+curl -s -X POST https://users.api.telcofy.ai/users \
+  -H "x-api-key: $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ "id": "customer-123", "name": "Acme Analytics", "role": "viewer" }'
+```
+
+
+### Data Aggregation API (`/data-agg`)
+//UNDER DEVELOPMENT
+
+
+Use `/data-agg` to request Telcofy’s analytical products - Activities and Origin-Destination Matrix (ODM) datasets.
+Submit asynchronous jobs for large date ranges, then download the results once processing completes. See
+[`data-access/overview`](../data-access/overview.md) for a deeper look at product definitions and available measures.
 
 **Submit an async aggregation job:**
 

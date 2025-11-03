@@ -2,7 +2,8 @@
 
 Use this quickstart to exchange your Telcofy machine-account API key for an OAuth
 token, download Cloud Storage exports, and call the Data API for maps and
-aggregated metrics.
+aggregated metrics. The Users API issues Google OAuth tokens scoped to specific
+services: Cloud Storage by default, or BigQuery when explicitly requested.
 
 To obtain Telcofy API access you need a valid contract; contact sales at tom@telcofy.ai.
 
@@ -10,7 +11,7 @@ To obtain Telcofy API access you need a valid contract; contact sales at tom@tel
 
 ## 1. Gather Prerequisites
 
-- Telcofy-issued **API key** and corresponding **user ID** (delivered securely by Telcofy).
+- Telcofy-issued **API key** (the login response echoes back your `userId` if you do not have it handy).
 - `curl` and `jq` for command-line examples.
 - `gsutil` if you prefer to copy Cloud Storage results via the CLI.
 
@@ -26,13 +27,24 @@ Telcofy service base URLs:
 If you are unsure where to retrieve `YOUR_MACHINE_ACCOUNT_KEY`, see the **API key
 provisioning** notes in [`authentication.md`](authentication.md).
 
-Call `POST /login-with-apikey` to obtain a one-hour Google OAuth token scoped to
-read your Cloud Storage exports.
+Call `POST /login-with-apikey` to obtain a one-hour Google OAuth token. The
+response includes both the token and the Telcofy `userId` that owns the data.
+Include an optional JSON body with `{"service":"bigquery"}` when you need a
+BigQuery-scoped token instead of the default Cloud Storage scope.
 
 ```bash
 export API_KEY="YOUR_MACHINE_ACCOUNT_KEY"
-ACCESS_TOKEN=$(curl -s -X POST https://users.api.telcofy.ai/login-with-apikey \
-  -H "x-api-key: $API_KEY" | jq -r .accessToken)
+LOGIN_RESPONSE=$(curl -s -X POST https://users.api.telcofy.ai/login-with-apikey \
+  -H "x-api-key: $API_KEY")
+ACCESS_TOKEN=$(echo "$LOGIN_RESPONSE" | jq -r .accessToken)
+USER_ID=$(echo "$LOGIN_RESPONSE" | jq -r .userId)
+
+# Request a BigQuery-scoped token instead of Cloud Storage:
+# LOGIN_RESPONSE=$(curl -s -X POST https://users.api.telcofy.ai/login-with-apikey \
+#   -H "x-api-key: $API_KEY" \
+#   -H "Content-Type: application/json" \
+#   -d '{"service":"bigquery"}')
+# ACCESS_TOKEN=$(echo "$LOGIN_RESPONSE" | jq -r .accessToken)
 ```
 
 Tokens expire after ~1 hour; repeat the exchange whenever you encounter
@@ -43,12 +55,12 @@ authorization errors.
 ## 3. Download Cloud Storage Exports
 
 Use the OAuth token as a bearer credential. The example below copies every file
-under your user’s export directory.
+under your user’s export directory using the `USER_ID` captured in the previous
+step.
 
 ```bash
-USER_ID="YOUR_USER_ID"
 gsutil -o "GSUtil:additional_http_headers=Authorization: Bearer $ACCESS_TOKEN" \
-  cp -r gs://telcofy-user-data/results/YOUR_USER_ID/ ./results_YOUR_USER_ID
+  cp -r gs://telcofy-user-data/results/$USER_ID/ ./results_$USER_ID
 ```
 
 Prefer a pure HTTP workflow? Use `curl` to stream individual objects:
@@ -102,20 +114,70 @@ for blob in client.list_blobs(BUCKET_NAME, prefix=prefix):
     local = os.path.join(f"results_{user_id}", os.path.basename(blob.name))
     blob.download_to_filename(local)
     print(f"Downloaded {blob.name} -> {local}")
+
+```
+Prefer Python for querying shared BigQuery datasets? Request a BigQuery-scoped token
+and run parameterised queries against the Shared BigQuery dataset (see
+[`Bigquery Sharing`](../data-access/analytical-hub.md) for dataset names and schema details):
+
+```python
+import os
+
+import requests
+from google.cloud import bigquery
+from google.oauth2.credentials import Credentials
+
+API_KEY = os.environ["API_KEY"]
+BASE_URL = "https://users.api.telcofy.ai"
+
+# Step 1: Get a BigQuery-scoped token
+resp = requests.post(
+    f"{BASE_URL}/login-with-apikey",
+    headers={"x-api-key": API_KEY},
+    json={"service": "bigquery"},
+)
+resp.raise_for_status()
+token_data = resp.json()
+
+creds = Credentials(token=token_data["accessToken"])
+
+# Step 2: Initialise the BigQuery client with the temporary credentials
+client = bigquery.Client(project="YOUR_SHARED_PROJECT", credentials=creds)
+
+# Step 3: Query Telcofy analytical hub views
+query = """
+    SELECT
+      c.target_name, 
+      c.timestamp, 
+      c.people_count  
+    FROM `YOUR_SHARED_PROJECT.YOUR_DATASET.realtime_summary` c
+    WHERE c.timestamp >= '2025-10-10T00:00:00Z' 
+    LIMIT 10
+"""
+
+for row in client.query(query):
+    print(
+        f"{row.target_name} | {row.timestamp} | {row.people_count} "
+    )
+
+```
+
+Need the same scope from the CLI? Include the JSON payload when calling the login endpoint:
+
+```bash
+curl -s -X POST https://users.api.telcofy.ai/login-with-apikey \
+  -H "x-api-key: $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"service":"bigquery"}'
 ```
 
 ---
 
 ## 4. Call the Data API (Maps & Aggregations)
 
+// THIS FEATURE UNDER DEVELOPMENT AND NOT AVAILABLE IN PRODUCTION
+
 The Data API accepts your Telcofy API key via the `x-api-key` header.
-
-Retrieve geometries within a bounding box:
-
-```bash
-curl -s "https://data.api.telcofy.ai/maps?geo_type=admin_level_4&lng1=10.70&lat1=59.90&lng2=10.80&lat2=59.95" \
-  -H "x-api-key: $API_KEY" | jq '.results[0]'
-```
 
 Fetch a synchronous population aggregation:
 
