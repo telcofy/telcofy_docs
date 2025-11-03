@@ -116,6 +116,8 @@ for blob in client.list_blobs(BUCKET_NAME, prefix=prefix):
     print(f"Downloaded {blob.name} -> {local}")
 
 ```
+## 4. Download data from Bigquery shared datasets
+
 Prefer Python for querying shared BigQuery datasets? Request a BigQuery-scoped token
 and run parameterised queries against the Shared BigQuery dataset (see
 [`Bigquery Sharing`](../data-access/analytical-hub.md) for dataset names and schema details):
@@ -173,7 +175,7 @@ curl -s -X POST https://users.api.telcofy.ai/login-with-apikey \
 
 ---
 
-## 4. Call the Data API (Maps & Aggregations)
+## 5. Call the Data API (Maps & Aggregations)
 
 // THIS FEATURE UNDER DEVELOPMENT AND NOT AVAILABLE IN PRODUCTION
 
@@ -210,7 +212,7 @@ token retrieved earlier.
 
 ---
 
-## 5. Keep Exploring
+## 6. Keep Exploring
 
 - Review `authentication.md` for API key exchange details and best practices.
 - Consult `endpoints.md` for the full list of supported Users API and Data API routes.
