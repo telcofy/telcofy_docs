@@ -175,13 +175,33 @@ curl -s -X POST https://users.api.telcofy.ai/login-with-apikey \
 
 ---
 
-## 5. Call the Data API (Maps & Aggregations)
-
-// THIS FEATURE UNDER DEVELOPMENT AND NOT AVAILABLE IN PRODUCTION
+## 5. Call the Data API (Realtime & Aggregations)
 
 The Data API accepts your Telcofy API key via the `x-api-key` header.
 
+Toggle realtime monitoring for a saved admin map:
+
+```bash
+curl -s -X POST https://data.api.telcofy.ai/realtime \
+  -H "x-api-key: $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{ "map_id": "2nnuJGDA0axOeuafA0wy", "enable": false }'
+```
+
+Example response:
+
+```json
+{
+  "msg": "Realtime monitoring disabled",
+  "map_id": "2nnuJGDA0axOeuafA0wy",
+  "is_monitored": false,
+  "bq_updated_rows": 1
+}
+```
+
+
 Fetch a synchronous population aggregation:
+// THIS FEATURE UNDER DEVELOPMENT AND NOT AVAILABLE IN PRODUCTION
 
 ```bash
 curl -s "https://data.api.telcofy.ai/data-agg?agg_type=activities&measure=sum_unique_people&start_time=2024-03-01T08:00:00Z&end_time=2024-03-01T09:00:00Z&activity_type=hourly&geo_type=grid_250m&geo_ids=22637506648500" \

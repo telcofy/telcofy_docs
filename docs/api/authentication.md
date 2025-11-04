@@ -84,7 +84,7 @@ curl -L -H "Authorization: Bearer $ACCESS_TOKEN" \
 
 ## 3. Calling the Admin API with an API Key
 
-Attach your API key to each Data API request using the `x-api-key` header.
+Attach your API key to each Telcofy admin request using the `x-api-key` header.
 
 ### Admin Maps (`/admin/maps`)
 
@@ -94,6 +94,7 @@ Admin map endpoints let you store and maintain reusable geometries. These routes
 | Endpoint | Description | Notes |
 | --- | --- | --- |
 | `GET /admin/maps` | List saved admin maps (custom polygons, grids). | Returns map metadata, including geometry and owning machine account. |
+| `GET /admin/maps/monitored` | List admin map IDs that are flagged for **realtime monitoring**. | Returns `count` plus `monitored_map_ids`. |
 | `POST /admin/maps` | Create a new admin map. | Provide `name`, `type`, and either `geometry` (WKT) or compatible `ids`. |
 | `PUT /admin/maps/:id` | Update an existing admin map. | Supply only the fields you want to change; geometry updates replace the stored polygon. |
 | `DELETE /admin/maps/:id` | Delete an admin map. | Removes the map from future queries; returns `{ "msg": "Map deleted" }`. |
@@ -120,6 +121,19 @@ Example response:
     }
   ]
 }
+```
+
+**List monitored maps:**
+
+```bash
+curl -s https://users.api.telcofy.ai/admin/maps/monitored \
+  -H "x-api-key: $API_KEY"
+```
+
+Example response:
+
+```json
+{ "count": 1, "monitored_map_ids": ["2nnuJGDA0axOeuafA0wy"] }
 ```
 
 **Create a map:**
@@ -184,29 +198,34 @@ Example response:
 { "msg": "Map deleted", "id": "QdZn1VqNBreF1Lyoc9Hj" }
 ```
 
+### Realtime Admin API 
 
-### Admin API (`/users`) 
-//UNDER DEVELOPMENT
-
-Some customers manage Telcofy user profiles through the Users Admin API. Each request
-must include your Telcofy API key in the `x-api-key` header.
+Enable or disable realtime monitoring for previously saved admin maps. These calls use
+`https://data.api.telcofy.ai` and require the same `x-api-key` header.
 
 | Endpoint | Description | Notes |
 | --- | --- | --- |
-| `POST /users` | Create a Telcofy user document. | Provide `id`, `name`, and `role` in the JSON body; responds with the stored record. |
-| `GET /users/:id` | Retrieve a user document. | Returns `404` if the user does not exist. |
-| `PUT /users/:id` | Update a user document. | Applies the supplied JSON fields; unspecified fields are left untouched. |
-| `DELETE /users/:id` | Delete a user document. | Responds with `{ "msg": "User deleted" }` when successful. |
+| `POST /realtime` | Toggle realtime monitoring for a map. | Body accepts `map_id` and `enable` (`true`/`false`); updates the realtime monitoring service parameters. |
 
-**Example (create a user):**
+**Enable monitoring for a map:**
 
 ```bash
-curl -s -X POST https://users.api.telcofy.ai/users \
+curl -s -X POST https://data.api.telcofy.ai/realtime \
   -H "x-api-key: $API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{ "id": "customer-123", "name": "Acme Analytics", "role": "viewer" }'
+  -d '{ "map_id": "svxtowUIKG33pVmbXKBT", "enable": true }'
 ```
 
+Example response:
+
+```json
+{
+  "msg": "Realtime monitoring enabled",
+  "map_id": "svxtowUIKG33pVmbXKBT",
+  "is_monitored": true,
+  "bq_updated_rows": 1
+}
+```
 
 ### Data Aggregation API (`/data-agg`)
 //UNDER DEVELOPMENT
