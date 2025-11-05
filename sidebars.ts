@@ -97,7 +97,7 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'html',
-      value: '<a href="/llm_friendly_docs.md" download="llm_friendly_docs.md" class="menu__link" style="display: block; padding: 0.375rem 0.75rem;">📄 LLM Friendly Docs</a>',
+      value: '<a href="/llm_friendly_docs.json" download="llm_friendly_docs.json" class="menu__link" style="display: block; padding: 0.375rem 0.75rem;">📄 LLM Friendly Docs</a>',
     },
   ],
 };
