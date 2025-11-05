@@ -91,6 +91,14 @@ const sidebars: SidebarsConfig = {
       ],
     },
     */
+    {
+      type: 'html',
+      value: '<hr style="margin: 1rem 0; border: 0; border-top: 1px solid rgba(0, 0, 0, 0.1);" />',
+    },
+    {
+      type: 'html',
+      value: '<a href="/llm_friendly_docs.md" download="llm_friendly_docs.md" class="menu__link" style="display: block; padding: 0.375rem 0.75rem;">📄 LLM Friendly Docs</a>',
+    },
   ],
 };
 
