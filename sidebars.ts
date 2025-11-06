@@ -45,6 +45,7 @@ const sidebars: SidebarsConfig = {
       items: [
         'api/quickstart',
         'api/authentication',
+        'api/data-delivery',
         'api/endpoints',
       ],
     },
