@@ -204,7 +204,110 @@ data shares).
 
 The Data API accepts your Telcofy API key via the `x-api-key` header.
 
-Toggle realtime monitoring for a saved admin map:
+### Admin Maps (`/admin/maps`)
+
+Admin map endpoints let you store and maintain reusable geometries for downstream
+workflows (dashboards, realtime monitoring, exports). All routes live on
+`https://users.api.telcofy.ai`.
+
+| Endpoint | Description | Notes |
+| --- | --- | --- |
+| `GET /admin/maps` | List saved admin maps (custom polygons, grids). | Returns map metadata, including geometry and owning machine account. |
+| `GET /admin/maps/monitored` | List admin map IDs that are flagged for realtime monitoring. | Response includes `count` plus `monitored_map_ids`. |
+| `POST /admin/maps` | Create a new admin map. | Provide `name`, `type`, and either `geometry` (WKT) or compatible `ids`. |
+| `PUT /admin/maps/:id` | Update an existing admin map. | Supply only the fields you want to change; geometry updates replace the stored polygon. |
+| `DELETE /admin/maps/:id` | Delete an admin map. | Removes the map from future queries; returns `{ "msg": "Map deleted" }`. |
+
+**List saved maps:**
+
+```bash
+curl -s https://users.api.telcofy.ai/admin/maps \
+  -H "x-api-key: $API_KEY"
+```
+
+Example response:
+
+```json
+{
+  "maps": [
+    {
+      "id": "2nnuJGDA0axOeuafA0wy",
+      "name": "Customer Zone Alpha",
+      "description": "Example custom zone created via API key",
+      "type": "custom_polygon",
+      "geometry": "POLYGON((10.7330245 59.948585, 10.734826 59.948413, 10.736222 59.949133, 10.735642 59.949885, 10.733625 59.94995, 10.732315 59.94924, 10.7330245 59.948585))",
+      "owner": "api-test-user-1-my-dev-key@telcofy-norway-poc.iam.gserviceaccount.com"
+    }
+  ]
+}
+```
+
+**List monitored maps:**
+
+```bash
+curl -s https://users.api.telcofy.ai/admin/maps/monitored \
+  -H "x-api-key: $API_KEY"
+```
+
+Example response:
+
+```json
+{ "count": 1, "monitored_map_ids": ["2nnuJGDA0axOeuafA0wy"] }
+```
+
+**Create a map:**
+
+```bash
+curl -s -X POST https://users.api.telcofy.ai/admin/maps \
+  -H "x-api-key: $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+        "name": "Customer Zone Alpha",
+        "description": "Example custom zone created via API key",
+        "type": "custom_polygon",
+        "geometry": "POLYGON((10.7872664 59.8679278, 10.7969259 59.8680208, 10.7969259 59.8701131, 10.7924594 59.8734470, 10.7878905 59.8708231, 10.7872664 59.8679278))"
+      }'
+```
+
+Example response:
+
+```json
+{
+  "msg": "Map saved",
+  "id": "2nnuJGDA0axOeuafA0wy",
+  "name": "Customer Zone Alpha",
+  "description": "Example custom zone created via API key",
+  "type": "custom_polygon",
+  "geometry": "POLYGON((10.7872664 59.8679278, 10.7969259 59.8680208, 10.7969259 59.8701131, 10.7924594 59.8734470, 10.7878905 59.8708231, 10.7872664 59.8679278))",
+  "owner": "api-test-user-1-my-dev-key@telcofy-norway-poc.iam.gserviceaccount.com"
+}
+```
+
+**Update a map:**
+
+```bash
+curl -s -X PUT https://users.api.telcofy.ai/admin/maps/$MAP_ID \
+  -H "x-api-key: $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+        "name": "Customer Zone Alpha (updated)",
+        "description": "Polygon geometry updated via API key",
+        "type": "custom_polygon",
+        "geometry": "POLYGON((10.761452 59.914762, 10.7654 59.914762, 10.7654 59.916699, 10.760765 59.916699, 10.757761 59.916139, 10.761452 59.914762))"
+      }'
+```
+
+**Delete a map:**
+
+```bash
+curl -s -X DELETE https://users.api.telcofy.ai/admin/maps/$MAP_ID \
+  -H "x-api-key: $API_KEY"
+```
+
+### Realtime Admin API (`/realtime`)
+
+Enable or disable realtime monitoring for saved admin maps by calling
+`https://data.api.telcofy.ai/admin/realtime`.
 
 ```bash
 curl -s -X POST https://data.api.telcofy.ai/admin/realtime \
@@ -223,6 +326,13 @@ Example response:
   "bq_updated_rows": 1
 }
 ```
+
+### Data Aggregation API (`/data-agg`)
+// THIS FEATURE UNDER DEVELOPMENT
+
+Use `/data-agg` to request Telcofy’s analytical products (Activities and Origin-Destination
+Matrix). Start with synchronous previews or submit asynchronous jobs that export detailed
+results to Cloud Storage.
 
 **Fetch a synchronous population aggregation** (feature preview):
 
