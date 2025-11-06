@@ -1,9 +1,11 @@
 # Telcofy Data Delivery Guide
 
-This guide covers everything that happens after you have exchanged your Telcofy API
-key for an OAuth token (see [`quickstart.md`](quickstart.md)). You will learn how to
-download Cloud Storage exports, query shared BigQuery datasets, and interact with the
-Realtime and Aggregations APIs.
+Telcofy APIs surface three pillars of data: **Maps** (admin polygons and metadata),
+**Realtime** headcounts, and **analytical products** such as Activities and ODM (refer to
+[`Data Products`](../products/index.md) for product-level summaries). Once
+you have an OAuth token (see [`Quickstart`](quickstart.md)), you can configure data
+products via the Admin APIs, then collect results either by exporting files to Cloud
+Storage or by running SQL against the shared BigQuery datasets. 
 
 ---
 
@@ -77,6 +79,15 @@ deployment.
 3. When building queries, set `BQ_PROJECT_ID` to your project ID and `BQ_DATASET_ID`
    to the linked dataset name you created.
 
+**Prerequisites**
+
+- Your querying identity (user or service account) must have `roles/analyticshub.viewer`
+  and at least `roles/bigquery.user` within your Google Cloud project. See the
+  [Analytics Hub subscriber permissions guide](https://cloud.google.com/bigquery/docs/analytics-hub-view-subscribe-listings)
+  for additional context.
+- Need to create a service account first? Follow Google’s
+  [service account setup guide](https://docs.cloud.google.com/iam/docs/service-accounts-create).
+
 ```python
 import os
 
@@ -125,11 +136,11 @@ for row in query_job:
 
 The query runs inside **your** Google Cloud project and appears on your billing.
 
-### Scenario B — You do not manage a Google Cloud project (provider-pays)
+### Scenario B — You do not manage a Google Cloud project 
 
 1. Telcofy issues a dedicated service account (for example,
    `demo-test-user-1@telcofy-norway-poc.iam.gserviceaccount.com`).
-2. Contact Telcofy support so the account receives the `roles/bigquery.user` role on
+2. During account provisioning the account receives the `roles/bigquery.user` role on
    the Telcofy project.
 3. Point your queries directly at Telcofy’s dataset.
 
@@ -178,8 +189,6 @@ for row in query_job:
     print(f"{row.target_name} | {row.timestamp} | {row.people_count}")
 ```
 
-This workload runs on Telcofy’s project; make sure your service account retains the
-required BigQuery role.
 
 Need to request the scope via `curl` instead? Supply the JSON body when calling the
 login endpoint:
