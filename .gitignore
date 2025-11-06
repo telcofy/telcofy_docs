@@ -22,5 +22,5 @@ yarn-error.log*
 # documents
 *.pdf
 
-.gitignore
-/scripts/
+# Generated LLM documentation
+static/llm_friendly_docs.json

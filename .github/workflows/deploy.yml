@@ -38,7 +38,15 @@ jobs:
       
       - name: Install dependencies
         run: npm ci
-      
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Generate LLM documentation
+        run: python scripts/create_llm_docs.py docs static/llm_friendly_docs.json
+
       - name: Build website
         run: npm run build
       
