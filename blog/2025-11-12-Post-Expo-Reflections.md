@@ -90,7 +90,6 @@ Cities increasingly seek telecom-based mobility data to augment IoT sensor netwo
 Across sessions and side meetings, one thing was clear: the smart-city movement needs scalable, affordable, and trustworthy data infrastructure — the very space Telcofy is built to fill.
 
 ![Collaboration and innovation](/2025-11-12-Post-Expo-Reflections/IMG_1424.JPG)
-*Photo credit: Nordic Edge/Tore B. Granstrøm*
 
 ## Beyond Barcelona: Building the European Mobility Data Ecosystem
 
