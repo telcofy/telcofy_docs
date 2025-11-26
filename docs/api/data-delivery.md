@@ -223,7 +223,7 @@ workflows (dashboards, realtime monitoring, exports). All routes live on
 | --- | --- | --- |
 | `GET /admin/maps` | List saved admin maps (custom polygons, grids). | Returns map metadata, including geometry and owning machine account. |
 | `GET /admin/maps/monitored` | List admin map IDs that are flagged for realtime monitoring. | Response includes `count` plus `monitored_map_ids`. |
-| `POST /admin/maps` | Create a new admin map. | Provide `name`, `type`, and either `geometry` (WKT) or compatible `ids`. |
+| `POST /admin/maps` | Create a new admin map. | Provide `name` and `type` (`custom_polygon` with `geometry` WKT, or standard types `grid_250m`, `grid_1000m`, `admin_level_2`, `admin_level_4` with matching `ids`). |
 | `PUT /admin/maps/:id` | Update an existing admin map. | Supply only the fields you want to change; geometry updates replace the stored polygon. |
 | `DELETE /admin/maps/:id` | Delete an admin map. | Removes the map from future queries; returns `{ "msg": "Map deleted" }`. |
 
@@ -266,6 +266,10 @@ Example response:
 
 **Create a map:**
 
+Supported map types:
+- `custom_polygon` — requires a `geometry` polygon in WKT format.
+- `grid_250m`, `grid_1000m`, `admin_level_2`, `admin_level_4` — require `ids` that belong to that standard map type.
+
 ```bash
 curl -s -X POST https://users.api.telcofy.ai/admin/maps \
   -H "x-api-key: $API_KEY" \
@@ -289,6 +293,34 @@ Example response:
   "type": "custom_polygon",
   "geometry": "POLYGON((10.7872664 59.8679278, 10.7969259 59.8680208, 10.7969259 59.8701131, 10.7924594 59.8734470, 10.7878905 59.8708231, 10.7872664 59.8679278))",
   "owner": "api-test-user-1-my-dev-key@telcofy-norway-poc.iam.gserviceaccount.com"
+}
+```
+
+Create a standard map using existing geography IDs:
+
+```bash
+curl -s -X POST https://users.api.telcofy.ai/admin/maps \
+  -H "x-api-key: $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+        "name": "Bjorvika",
+        "description": "Bjorvika grunnkrets",
+        "type": "admin_level_4",
+        "ids": [3010104, 3012903]
+      }'
+```
+
+Example response:
+
+```json
+{
+  "msg": "Map saved",
+  "id": "oqQoAMdgXXtl9ITwufxP",
+  "name": "Bjorvika",
+  "description": "Bjorvika grunnkrets",
+  "type": "admin_level_4",
+  "ids": [3010104, 3012903],
+  "owner": "demo-test-user@test.com"
 }
 ```
 
