@@ -1,5 +1,5 @@
 ---
-slug: radio-propagation-and-its-effects-on-mobility-insights
+slug: when-signals-lie-radio-physics-and-mobility-insight
 title: "When Signals Lie: Radio Physics and Mobility Insight"
 authors: [oslo-research-team]
 tags: [mobility-science, data-science, technology, privacy]
