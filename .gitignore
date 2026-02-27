@@ -24,3 +24,4 @@ yarn-error.log*
 
 # Generated LLM documentation
 static/llm_friendly_docs.json
+.vscode/
