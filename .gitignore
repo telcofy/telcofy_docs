@@ -25,3 +25,9 @@ yarn-error.log*
 # Generated LLM documentation
 static/llm_friendly_docs.json
 .vscode/
+
+# use obsidian for note taking, but don't want to commit obsidian config files
+.obsidian/
+
+# Snyk Security Extension
+.github/

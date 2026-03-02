@@ -6,7 +6,7 @@ tags: [mobility-science, smart-cities, technology, ]
 date: 2026-02-27
 ---
 
-![intro](/2026-02-27/0.png)
+![intro](../static/2026-02-27/0.png)
 
 Norway is a destination that draws visitors from around the world. Understanding who visits Norway, when they arrive, and how their visit develops over time is critical for better planning, resource allocation, and market analysis. Mendo analytics, in partnership with Telcofy, is leading a pilot project to gain a clearer, more continuous picture of tourist and visitor data.
 
@@ -22,7 +22,7 @@ Telenor possesses a large and stable data foundation in Norway, ensuring solid q
 This project is designed to provide actionable intelligence across several core areas:
 
 ## 1\. Planning and Resource Allocation
-![Planning_Resource_Allocation](/2026-02-27/1-Planning_Resource_Allocation.png)
+![Planning_Resource_Allocation](../static/2026-02-27/1-Planning_Resource_Allocation.png)
 
 
 The data provides a factual basis for better capacity and resource allocation by identifying actual visitor patterns. It helps in understanding strain and traffic in different periods throughout the year.
