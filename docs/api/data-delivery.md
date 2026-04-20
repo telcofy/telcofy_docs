@@ -139,10 +139,15 @@ The query runs inside **your** Google Cloud project and appears on your billing.
 ### Scenario B — You do not manage a Google Cloud project 
 
 1. Telcofy issues a dedicated service account (for example,
-   `demo-test-user-1@telcofy-norway-poc.iam.gserviceaccount.com`).
+   `demo-test-user-1@telcofy-norway-delivery.iam.gserviceaccount.com`).
 2. During account provisioning the account receives the `roles/bigquery.user` role on
    the Telcofy project.
 3. Point your queries directly at Telcofy’s dataset.
+
+**Prerequisites**
+
+- Your API key needs to have a BigQuery scope added in the **API Keys** section of [https://app.telcofy.ai](https://app.telcofy.ai).
+- For accessing Realtime Data, a personal dataset needs to be requested in the **API Keys** section of [https://app.telcofy.ai](https://app.telcofy.ai).
 
 ```python
 import os
@@ -165,9 +170,12 @@ token_data = resp.json()
 creds = Credentials(token=token_data["accessToken"])
 
 # Scenario B configuration — Telcofy-hosted project and dataset
-BQ_PROJECT_ID = "telcofy-norway-poc"
-BQ_DATASET_ID = "realtime_shared"
-BQ_TABLE_ID = "target_country_summary_view_customer"
+BQ_PROJECT_ID = "telcofy-norway-delivery"
+# Your personal dataset — find it in "API Keys" > "Existing API Keys" > "Personal dataset"
+# Make sure you have "Realtime" enabled in "scopes"
+# at https://app.telcofy.ai
+BQ_DATASET_ID = "<your-personal-dataset>"
+BQ_TABLE_ID = "realtime_data"
 
 client = bigquery.Client(project=BQ_PROJECT_ID, credentials=creds)
 
@@ -183,7 +191,7 @@ query_template = f"""
 """
 
 job_config = bigquery.QueryJobConfig(use_query_cache=False)
-query_job = client.query(query_template, job_config=job_config, location="eu")
+query_job = client.query(query_template, job_config=job_config, location="europe-north1")
 
 for row in query_job:
     print(f"{row.target_name} | {row.timestamp} | {row.people_count}")
@@ -245,7 +253,7 @@ Example response:
       "description": "Example custom zone created via API key",
       "type": "custom_polygon",
       "geometry": "POLYGON((10.7330245 59.948585, 10.734826 59.948413, 10.736222 59.949133, 10.735642 59.949885, 10.733625 59.94995, 10.732315 59.94924, 10.7330245 59.948585))",
-      "owner": "api-test-user-1-my-dev-key@telcofy-norway-poc.iam.gserviceaccount.com"
+      "owner": "api-test-user-1-my-dev-key@telcofy-norway-delivery.iam.gserviceaccount.com"
     }
   ]
 }
@@ -292,7 +300,7 @@ Example response:
   "description": "Example custom zone created via API key",
   "type": "custom_polygon",
   "geometry": "POLYGON((10.7872664 59.8679278, 10.7969259 59.8680208, 10.7969259 59.8701131, 10.7924594 59.8734470, 10.7878905 59.8708231, 10.7872664 59.8679278))",
-  "owner": "api-test-user-1-my-dev-key@telcofy-norway-poc.iam.gserviceaccount.com"
+  "owner": "api-test-user-1-my-dev-key@telcofy-norway-delivery.iam.gserviceaccount.com"
 }
 ```
 
