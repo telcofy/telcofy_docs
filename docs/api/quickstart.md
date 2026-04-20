@@ -22,15 +22,14 @@ Telcofy service base URLs:
 
 ---
 
-## 2. Exchange the API Key for a Cloud Storage Access Token
+## 2. Cloud Storage Access Token
 
 If you are unsure where to retrieve `YOUR_MACHINE_ACCOUNT_KEY`, see the **API key
 provisioning** notes in [`authentication.md`](authentication.md).
 
-Call `POST /login-with-apikey` to obtain a one-hour Google OAuth token. The
-response includes both the token and the Telcofy `userId` that owns the data.
-Include an optional JSON body with `{"service":"bigquery"}` when you need a
-BigQuery-scoped token instead of the default Cloud Storage scope.
+Call `POST /login-with-apikey` to obtain a one-hour Google OAuth token scoped to
+Cloud Storage. The response includes both the token and the Telcofy `userId` that
+owns the data.
 
 ```bash
 export API_KEY="YOUR_MACHINE_ACCOUNT_KEY"
@@ -38,13 +37,26 @@ LOGIN_RESPONSE=$(curl -s -X POST https://users.api.telcofy.ai/login-with-apikey 
   -H "x-api-key: $API_KEY")
 ACCESS_TOKEN=$(echo "$LOGIN_RESPONSE" | jq -r .accessToken)
 USER_ID=$(echo "$LOGIN_RESPONSE" | jq -r .userId)
+```
 
-# Request a BigQuery-scoped token instead of Cloud Storage:
-# LOGIN_RESPONSE=$(curl -s -X POST https://users.api.telcofy.ai/login-with-apikey \
-#   -H "x-api-key: $API_KEY" \
-#   -H "Content-Type: application/json" \
-#   -d '{"service":"bigquery"}')
-# ACCESS_TOKEN=$(echo "$LOGIN_RESPONSE" | jq -r .accessToken)
+Tokens expire after ~1 hour; repeat the exchange whenever you encounter
+authorization errors.
+
+---
+
+## 3. BigQuery Access Token
+
+To query BigQuery, pass `{"service":"bigquery"}` in the request body. This returns a
+token scoped to BigQuery instead of Cloud Storage.
+
+```bash
+export API_KEY="YOUR_MACHINE_ACCOUNT_KEY"
+LOGIN_RESPONSE=$(curl -s -X POST https://users.api.telcofy.ai/login-with-apikey \
+  -H "x-api-key: $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"service":"bigquery"}')
+ACCESS_TOKEN=$(echo "$LOGIN_RESPONSE" | jq -r .accessToken)
+USER_ID=$(echo "$LOGIN_RESPONSE" | jq -r .userId)
 ```
 
 Tokens expire after ~1 hour; repeat the exchange whenever you encounter

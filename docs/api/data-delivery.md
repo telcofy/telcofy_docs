@@ -353,10 +353,9 @@ curl -s -X DELETE https://users.api.telcofy.ai/admin/maps/$MAP_ID \
   -H "x-api-key: $API_KEY"
 ```
 
-### Realtime Admin API (`/realtime`)
+### Realtime Admin API (`/admin/realtime`)
 
-Enable or disable realtime monitoring for saved admin maps by calling
-`https://data.api.telcofy.ai/admin/realtime`.
+**Enable or disable realtime monitoring** for a saved admin map:
 
 ```bash
 curl -s -X POST https://data.api.telcofy.ai/admin/realtime \
@@ -375,6 +374,37 @@ Example response:
   "bq_updated_rows": 1
 }
 ```
+
+**Fetch the latest realtime headcount rows** for all monitored maps:
+
+```bash
+curl -s "https://data.api.telcofy.ai/admin/realtime/data" \
+  -H "x-api-key: $API_KEY"
+```
+
+Example response:
+
+```json
+{
+  "rows": [
+    {
+      "timestamp": { "value": "2026-04-20T13:40:12.000Z" },
+      "target_id": "snS123456sDQnAwk",
+      "target_name": "my_area1",
+      "result": "SUCCESS",
+      "subscriber_count": 249
+    }
+  ]
+}
+```
+
+| Field | Type | Description |
+| ----- | ---- | ----------- |
+| `timestamp.value` | ISO 8601 string | Time the measurement was recorded. |
+| `target_id` | string | Internal ID of the monitored admin map. |
+| `target_name` | string | Human-readable name of the admin map. |
+| `result` | string | Processing status (`SUCCESS` or error code). |
+| `subscriber_count` | integer | Estimated headcount at measurement time. |
 
 ### Data Aggregation API (`/data-agg`)
 // THIS FEATURE UNDER DEVELOPMENT

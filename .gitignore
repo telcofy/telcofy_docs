@@ -31,3 +31,4 @@ static/llm_friendly_docs.json
 
 # Snyk Security Extension
 .github/
+temp/
