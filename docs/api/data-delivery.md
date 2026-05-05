@@ -408,7 +408,7 @@ Example response:
 
 ### Data Aggregation API (`/data-agg`)
 
-> **Note:** The `/data-agg` endpoint is only available in the **Telcofy Dev environment** (`https://dev.data.api.telcofy.ai`).
+> **Note:** The `/data-agg` endpoint is only available in the **Telcofy Dev environment** (`https://dev.data.api.telcofy.ai`). It requires a separate Dev API key. Contact [support@telcofy.ai](mailto:support@telcofy.ai) to get access to Telcofy Dev and test features under development.
 
 Use `/data-agg` to request Telcofy’s analytical products (Activities and Origin-Destination
 Matrix). Start with synchronous previews or submit asynchronous jobs that export detailed
