@@ -407,7 +407,8 @@ Example response:
 | `subscriber_count` | integer | Estimated headcount at measurement time. |
 
 ### Data Aggregation API (`/data-agg`)
-// THIS FEATURE UNDER DEVELOPMENT
+
+> **Note:** The `/data-agg` endpoint is only available in the **Telcofy Dev environment** (`https://dev.data.api.telcofy.ai`).
 
 Use `/data-agg` to request Telcofy’s analytical products (Activities and Origin-Destination
 Matrix). Start with synchronous previews or submit asynchronous jobs that export detailed
@@ -417,30 +418,68 @@ results to Cloud Storage.
 
 ```bash
 curl -s "https://data.api.telcofy.ai/data-agg?agg_type=activities&measure=sum_unique_people&start_time=2024-03-01T08:00:00Z&end_time=2024-03-01T09:00:00Z&activity_type=hourly&geo_type=grid_250m&geo_ids=22637506648500" \
-  -H "x-api-key: $API_KEY" | jq '.results[0]'
+  -H "x-api-key: $API_KEY" | jq ‘.results[0]’
 ```
 
-Submit an asynchronous aggregation job (exports to Cloud Storage when `full=true`):
+**Step 1 — Submit an asynchronous aggregation job** (exports to Cloud Storage when `full=true`):
 
 ```bash
-curl -s -X POST https://data.api.telcofy.ai/data-agg \
+curl -s -X POST https://dev.data.api.telcofy.ai/data-agg \
   -H "x-api-key: $API_KEY" \
   -H "Content-Type: application/json" \
-  -d '{
+  -d ‘{
         "agg_type": "activities",
         "measure": "sum_unique_people",
-        "start_time": "2024-03-01T00:00:00Z",
-        "end_time": "2024-03-01T23:59:59Z",
-        "activity_type": "daily",
-        "geo_type": "grid_1000m",
-        "geo_ids": [22637506648500, 22640006648500],
-        "full": true
-      }'
+        "start_time": "2024-03-01T08:00:00Z",
+        "end_time": "2024-03-01T08:59:59Z",
+        "activity_type": "hourly",
+        "geo_type": "admin_level_4",
+        "geo_ids": [3010104],
+        "full": false
+      }’
 ```
 
-Poll `/data-agg/status/{jobId}` and `/data-agg/results/{jobId}` until the job
-completes, then download the exported files from Cloud Storage using the OAuth token
-retrieved earlier.
+Example response:
+
+```json
+{"job_id":"12bd1616-002b-43c5-bc0c-422a2110c481","status":"queued","status_url":"/data-agg/status/12bd1616-002b-43c5-bc0c-422a2110c481","results_url":"/data-agg/results/12bd1616-002b-43c5-bc0c-422a2110c481"}
+```
+
+**Step 2 — (Optional) Check job status:**
+
+For long-running queries you can poll `status_url` to track progress before fetching results.
+
+```bash
+curl -s -X GET https://dev.data.api.telcofy.ai/data-agg/status/12bd1616-002b-43c5-bc0c-422a2110c481 \
+  -H "x-api-key: $API_KEY"
+```
+
+Example response:
+
+```json
+{"job_id":"12bd1616-002b-43c5-bc0c-422a2110c481","status":"completed","progress":100,"created_at":"2026-05-05T13:15:06.888Z","start_time":"2026-05-05T13:15:07.470Z","end_time":"2026-05-05T13:15:09.194Z","estimated_completion":null,"error":null}
+```
+
+**Step 3 — Fetch results:**
+
+```bash
+curl -s -X GET https://dev.data.api.telcofy.ai/data-agg/results/12bd1616-002b-43c5-bc0c-422a2110c481 \
+  -H "x-api-key: $API_KEY"
+```
+
+Example response (`full=false` — inline preview):
+
+```json
+{"job_id":"12bd1616-002b-43c5-bc0c-422a2110c481","status":"completed","country_code":"NOR","preview":[{"sum_unique_people":1833,"time_bucket":"2024-03-01 08:00:00","geo_id":3010104,"geo_name":"Sentrum 1 - Rode 4","type":"hourly"}]}
+```
+
+When `full=true`, the results response returns a Cloud Storage path instead of an inline preview:
+
+```json
+{"http_path":"https://console.cloud.google.com/storage/browser/telcofy-user-data/results/UHkLS2lo3xNjpG2JYyJLGZ9Obsf2/f1589d4e-eab4-4232-adee-476cebf71a07/activities_daily_sum_unique_people"}
+```
+
+Download the exported files from Cloud Storage using the OAuth token retrieved in [Section 1](#1-download-cloud-storage-exports).
 
 ---
 
