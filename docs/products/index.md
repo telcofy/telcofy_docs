@@ -19,8 +19,15 @@ Telcofy packages MultiMNO-derived analytics into commercial offerings designed f
 - **Use cases** — Regional and long-distance transport planning, corridor optimisation, tourism flow analysis, infrastructure investment targeting.
 - **Delivery** — Aggregated OD matrices with device counts, journey-time stats, and origin/destination attributes (including country for foreign SIMs).
 
+## Telcofy Flow
+
+- **What it measures** — Link-level traffic volumes on the road network, derived by projecting telco OD matrices through a pre-trained national traffic assignment model calibrated against ground-truth counter networks.
+- **Use cases** — Road network planning, corridor and screen-line analysis, junction turning-movement estimation, infrastructure investment targeting, scenario comparison.
+- **Delivery** — Vehicle counts per OpenStreetMap road segment, by hour and day, split by direction of travel, with per-link quality flags indicating counter coverage and OD input quality.
+
 ## Telcofy Realtime
 
 - **What it measures** — Low-latency snapshots of unique devices in a geography.
 - **Use cases** — Operational monitoring, traffic and crowd management, emergency response, live event operations.
 - **Delivery** — Streaming or frequent snapshots, surfaced via dashboards or APIs, with optional local vs. foreign breakdowns (non-extrapolated for roamers).
+
