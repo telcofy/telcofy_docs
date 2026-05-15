@@ -23,7 +23,7 @@ Telcofy packages MultiMNO-derived analytics into commercial offerings designed f
 
 - **What it measures** — Link-level traffic volumes on the road network, derived by projecting telco OD matrices through a pre-trained national traffic assignment model calibrated against ground-truth counter networks.
 - **Use cases** — Road network planning, corridor and screen-line analysis, junction turning-movement estimation, infrastructure investment targeting, scenario comparison.
-- **Delivery** — Vehicle counts per OpenStreetMap road segment, by hour and day, split by direction of travel, with per-link quality flags indicating counter coverage and OD input quality.
+- **Delivery** — Vehicle counts per OpenStreetMap road segment, by hour and day, split by direction of travel.
 
 ## Telcofy Realtime
 
