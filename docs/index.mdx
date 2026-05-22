@@ -5,26 +5,17 @@ slug: /
 hide_title: true
 ---
 
-import AnimatedTelcofyPin from '@site/src/components/HomepageFeatures/TelcofyPin';
 import ContactSection from '@site/src/components/ContactSection';
-import Link from '@docusaurus/Link';
 
-<div style={{
-  background: '#000',
-  color: '#fff',
-  padding: '2rem 2rem',
-  marginBottom: '3rem',
-  marginTop: '1rem',
-  marginLeft: '-2rem',
-  marginRight: '-2rem',
-  textAlign: 'center',
-  borderRadius: '8px'
-}}>
-  <div style={{display: 'flex', justifyContent: 'center', marginBottom: '0.5rem'}}>
-    <AnimatedTelcofyPin width={120} height={120} />
+<div className="docs-hero">
+  <div className="docs-hero__pin">
+    <img src="/brand/telcofy-mark.svg" alt="" style={{height: 64, width: 'auto'}} />
   </div>
-  <h1 style={{color: '#fff', fontSize: '2rem', marginTop: '0.5rem', marginBottom: '0.5rem'}}>Telcofy Documentation</h1>
-  <p style={{fontSize: '1rem', marginBottom: '0', color: '#ddd'}}>Transform Telco Data into Value - EU Compliance & Analytics Platform</p>
+  <div style={{textAlign: 'center'}}>
+    <span className="eyebrow">Documentation</span>
+  </div>
+  <h1 className="docs-hero__title">Telco<span className="fy">fy</span> for developers</h1>
+  <p className="docs-hero__subtitle">Reference, methodology, and API guides for the neutral, multi-operator mobility intelligence pipeline.</p>
 </div>
 
 ---

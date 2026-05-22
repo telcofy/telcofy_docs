@@ -1,69 +1,209 @@
 /**
- * Telcofy custom styles
+ * Telcofy custom styles — aligned with the Telcofy Design System.
+ *
+ * Brand voice is quiet, technical, civic. The visual language is
+ * organic shapes, verdant greens, matter-of-fact typography, and
+ * clean cartographic whites. Nothing flashy.
+ *
+ * Tokens mirror `colors_and_type.css` from the design system; the
+ * `--ifm-*` variables are mapped onto those tokens so Docusaurus
+ * picks up the brand without further intervention.
  */
 
-/* Import Poppins font */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
 
-/* Telcofy Brand Colors */
 :root {
-  --telcofy-seafoam: #4CAF50;
-  --telcofy-eu-blue: #1E1E1E;
-  --telcofy-light-gray: #F8F9FA;
-  --telcofy-dark-gray: #1F2937;
-  
-  /* Override Docusaurus defaults with Telcofy colors */
-  --ifm-color-primary: #4CAF50;
-  --ifm-color-primary-dark: #43A047;
-  --ifm-color-primary-darker: #3E8F42;
-  --ifm-color-primary-darkest: #2E7D32;
-  --ifm-color-primary-light: #66BB6A;
-  --ifm-color-primary-lighter: #81C784;
+  /* ---------- Ink (neutrals) ---------- */
+  --ink:           #1E1E1E;
+  --ink-soft:      #1F2937;
+  --ink-muted:     #4B5563;
+  --ink-subtle:    #6B7280;
+  --ink-faint:     #9CA3AF;
+
+  /* ---------- Brand green ---------- */
+  --green-500:     #4CAF50;
+  --green-600:     #45A049;
+  --green-700:     #388E3C;
+  --green-mint:    #71EEB8;
+  --green-50:      #E8F5E9;
+  --green-gradient: linear-gradient(135deg, #16A34A 0%, #15803D 100%);
+
+  /* ---------- Paper (surfaces) ---------- */
+  --paper:         #FFFFFF;
+  --paper-100:     #F9FAFB;
+  --paper-200:     #F2F2F2;
+  --paper-300:     #E5E6E6;
+  --paper-400:     #D1D5DB;
+
+  /* ---------- Semantic ---------- */
+  --danger:        #EF4444;
+  --danger-hover:  #DC2626;
+  --danger-bg:     #FEE2E2;
+  --warning:       #F59E0B;
+  --info:          #3B82F6;
+
+  /* ---------- Radii ---------- */
+  --radius-xs:     4px;
+  --radius-sm:     6px;
+  --radius-md:     8px;
+  --radius-lg:     12px;
+  --radius-xl:     16px;
+  --radius-2xl:    24px;
+  --radius-full:   9999px;
+
+  /* ---------- Elevation ---------- */
+  --shadow-sm:     0 1px 2px 0 rgba(0, 0, 0, 0.04);
+  --shadow-md:     0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
+  --shadow-card:   0 20px 25px -5px rgba(0, 0, 0, 0.10), 0 8px 10px -6px rgba(0, 0, 0, 0.06);
+  --shadow-hover:  0 25px 50px -12px rgba(0, 0, 0, 0.18);
+
+  /* ---------- Motion ---------- */
+  --ease-default:  cubic-bezier(0.4, 0, 0.2, 1);
+  --dur-fast:      150ms;
+  --dur-base:      300ms;
+
+  /* ---------- Type ---------- */
+  --font-display:  'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-body:     'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono:     ui-monospace, SFMono-Regular, 'SF Mono', 'JetBrains Mono', Menlo, monospace;
+
+  /* ---------- Legacy aliases (kept so old class names keep working) ---------- */
+  --telcofy-seafoam:      var(--green-500);
+  --telcofy-eu-blue:      var(--ink);
+  --telcofy-light-gray:   var(--paper-200);
+  --telcofy-dark-gray:    var(--ink-soft);
+  --telcofy-hero-gradient: var(--green-gradient);
+
+  /* ---------- Docusaurus theme overrides ---------- */
+  --ifm-color-primary:          var(--green-500);
+  --ifm-color-primary-dark:     var(--green-600);
+  --ifm-color-primary-darker:   #3E8F42;
+  --ifm-color-primary-darkest:  var(--green-700);
+  --ifm-color-primary-light:    #66BB6A;
+  --ifm-color-primary-lighter:  #81C784;
   --ifm-color-primary-lightest: #A5D6A7;
-  
-  /* Secondary color (EU Blue) */
-  --ifm-color-secondary: #002D63;
-  --ifm-color-secondary-dark: #002959;
-  --ifm-color-secondary-darker: #002755;
-  --ifm-color-secondary-darkest: #001F45;
-  --ifm-color-secondary-light: #00316D;
-  --ifm-color-secondary-lighter: #003371;
-  --ifm-color-secondary-lightest: #003B81;
-  
-  --ifm-code-font-size: 95%;
-  --ifm-font-family-base: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --docusaurus-highlighted-code-line-bg: rgba(113, 238, 184, 0.1);
-  
-  /* Navbar */
-  --ifm-navbar-background-color: rgba(255, 255, 255, 0.8);
-  --ifm-navbar-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-  
-  /* Hero gradient matching landing page */
-  --telcofy-hero-gradient: linear-gradient(135deg, #002D63 0%, #71EEB8 100%);
+
+  --ifm-background-color:         var(--paper-200);
+  --ifm-background-surface-color: var(--paper);
+
+  --ifm-font-family-base:        var(--font-body);
+  --ifm-font-family-monospace:   var(--font-mono);
+  --ifm-heading-font-family:     var(--font-display);
+  --ifm-heading-font-weight:     700;
+  --ifm-font-color-base:         var(--ink-soft);
+
+  --ifm-code-font-size:          95%;
+  --ifm-code-background:         var(--paper-200);
+
+  --ifm-navbar-background-color: var(--paper);
+  --ifm-navbar-shadow:           var(--shadow-sm);
+  --ifm-navbar-link-hover-color: var(--green-500);
+
+  --ifm-global-radius:           var(--radius-md);
+  --ifm-card-border-radius:      var(--radius-lg);
+  --ifm-button-border-radius:    var(--radius-sm);
+
+  /* Site-wide links stay ink by default; brand green is reserved for
+     hover and for in-content markdown links (see `.markdown a` below). */
+  --ifm-link-color:              var(--ink-soft);
+  --ifm-link-hover-color:        var(--green-500);
+  --ifm-link-hover-decoration:   none;
+
+  --docusaurus-highlighted-code-line-bg: rgba(76, 175, 80, 0.12);
 }
 
-/* Dark mode adjustments */
+/* Dark mode (disabled in config, but the variables stay correct). */
 [data-theme='dark'] {
-  --ifm-color-primary: #4CAF50;
-  --ifm-color-primary-dark: #43A047;
-  --ifm-color-primary-darker: #3E8F42;
-  --ifm-color-primary-darkest: #2E7D32;
-  --ifm-color-primary-light: #66BB6A;
-  --ifm-color-primary-lighter: #81C784;
+  --ifm-color-primary:          var(--green-500);
+  --ifm-color-primary-dark:     var(--green-600);
+  --ifm-color-primary-darker:   #3E8F42;
+  --ifm-color-primary-darkest:  var(--green-700);
+  --ifm-color-primary-light:    #66BB6A;
+  --ifm-color-primary-lighter:  #81C784;
   --ifm-color-primary-lightest: #A5D6A7;
+  --ifm-background-color:       #1A1A1A;
+  --ifm-background-surface-color: #1E1E1E;
   --docusaurus-highlighted-code-line-bg: rgba(76, 175, 80, 0.2);
-  --ifm-background-color: #1a1a1a;
 }
 
-/* Navbar styling to match landing page */
+/* =============================================================
+   Wordmark — `Telco` in ink, `fy` in brand green.
+   Available as a utility class anywhere we render the brand
+   inline in JSX or markdown.
+   ============================================================= */
+.wordmark {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+}
+.wordmark .fy { color: var(--green-500); }
+
+/* =============================================================
+   Headings — Poppins, tight tracking, generous leading.
+   ============================================================= */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  letter-spacing: -0.015em;
+  color: var(--ink);
+  line-height: 1.2;
+}
+h1 { letter-spacing: -0.025em; line-height: 1.1; }
+h2 { letter-spacing: -0.02em; }
+
+/* Bold text inside body copy uses ink (not muted). */
+strong, b {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* =============================================================
+   Navbar — crisp white, soft shadow, no frosted-glass.
+   The design system explicitly forbids backdrop-filter blur.
+   ============================================================= */
 .navbar {
-  backdrop-filter: blur(12px);
-  background-color: var(--ifm-navbar-background-color);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  background-color: var(--paper);
+  border-bottom: 1px solid var(--paper-300);
+  box-shadow: var(--shadow-sm);
   z-index: 9999;
 }
 
-/* Fix mobile menu drawer to fill viewport */
+/* Render the brand wordmark in the navbar: ink "Telco" + green "fy".
+   The original text "Telcofy" stays in the DOM for accessibility but
+   is visually hidden via font-size: 0; the pseudo-elements paint the
+   coloured glyphs. */
+.navbar__title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.navbar__title::before,
+.navbar__title::after {
+  font-size: 1.5rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.navbar__title::before {
+  content: 'Telco';
+  color: var(--ink);
+}
+.navbar__title::after {
+  content: 'fy';
+  color: var(--green-500);
+}
+
+.navbar__link {
+  font-family: var(--font-body);
+  font-weight: 500;
+}
+.navbar__link:hover {
+  color: var(--green-500);
+}
+
+/* Mobile drawer — keep prior behaviour, restyle surfaces. */
 .navbar-sidebar {
   z-index: 10000 !important;
   height: 100vh !important;
@@ -71,115 +211,284 @@
   top: 0 !important;
   left: 0 !important;
   width: 85.71% !important;
-  background-color: white !important;
+  background-color: var(--paper) !important;
+}
+.navbar-sidebar__backdrop { display: none !important; }
+.navbar-sidebar__back     { display: none !important; }
+
+/* =============================================================
+   Buttons
+   ============================================================= */
+.button {
+  font-family: var(--font-body);
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  transition: background-color var(--dur-fast) var(--ease-default),
+              color var(--dur-fast) var(--ease-default),
+              border-color var(--dur-fast) var(--ease-default);
 }
 
-/* Hide the backdrop */
-.navbar-sidebar__backdrop {
-  display: none !important;
-}
-
-/* Hide the "back to main menu" link */
-.navbar-sidebar__back {
-  display: none !important;
-}
-
-.navbar__title {
-  font-weight: 700;
-  font-size: 1.875rem;
-}
-
-/* Telcofy branded button */
+/* Primary brand CTA. */
 .button--telcofy {
-  background-color: var(--telcofy-seafoam);
-  color: white;
+  background-color: var(--green-500);
+  color: var(--paper);
   border: none;
-  font-weight: 600;
-  transition: all 0.2s ease;
 }
-
 .button--telcofy:hover {
-  background-color: var(--ifm-color-primary-dark);
-  transform: scale(1.05);
+  background-color: var(--green-600);
+  color: var(--paper);
 }
 
-/* EU Compliance button */
+/* Secondary action — outline in brand green. */
 .button--eu-compliance {
-  background-color: #3B82F6;
-  color: white;
-  border: none;
-  font-weight: 600;
-  transition: all 0.2s ease;
+  background-color: transparent;
+  color: var(--green-600);
+  border: 1px solid var(--green-500);
 }
-
 .button--eu-compliance:hover {
-  background-color: #2563EB;
-  transform: scale(1.05);
+  background-color: var(--green-50);
+  color: var(--green-700);
+  border-color: var(--green-600);
 }
 
-/* Hero section styling */
-.hero--telcofy {
-  background-color: var(--telcofy-eu-blue);
-  color: white;
-  padding: 4rem 0;
-}
-
-/* Card styling matching landing page */
-.card {
-  background: white;
-  border-radius: 0.75rem;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-}
-
-.card:hover {
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-  transform: translateY(-2px);
-}
-
-/* Code blocks with Telcofy accent */
-.prism-code {
-  border-left: 3px solid var(--telcofy-seafoam);
-}
-
-/* Footer styling */
-.footer {
-  background-color: var(--telcofy-dark-gray);
-  color: #9CA3AF;
-}
-
-.footer__title {
-  color: white;
-}
-
-/* Custom badge for EU compliance */
-.badge--eu {
-  background-color: var(--telcofy-eu-blue);
-  color: white;
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-  font-size: 0.875rem;
+/* =============================================================
+   Section eyebrow — tiny green uppercase label above a heading.
+   Matches the frontend pattern (`The bridge`, `Platform`).
+   ============================================================= */
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-body);
+  font-size: 0.75rem;
   font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--green-700);
+  margin-bottom: 0.75rem;
+}
+.eyebrow::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: var(--green-500);
 }
 
-/* Telcofy feature cards */
-.feature-card {
-  background: white;
-  padding: 2rem;
-  border-radius: 1rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
+/* =============================================================
+   Docs landing hero — paper surface with two soft green orbs
+   blurred behind the content. Orbs sit in ::before / ::after at
+   z-index: -1; `overflow: hidden` + `isolation: isolate` contain
+   the blur to the card. Reads as a near-white panel with two
+   gentle green halos — quiet, not loud.
+   ============================================================= */
+.docs-hero {
+  position: relative;
+  background: var(--paper);
+  color: var(--ink);
+  padding: 3rem 2.5rem;
+  margin: 0.5rem 0 3rem;
+  border: 1px solid var(--paper-300);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  isolation: isolate;
+  box-shadow: var(--shadow-sm);
+}
+.docs-hero::before,
+.docs-hero::after {
+  content: '';
+  position: absolute;
+  border-radius: var(--radius-full);
+  filter: blur(80px);
+  z-index: -1;
+  pointer-events: none;
+}
+.docs-hero::before {
+  width: 320px;
+  height: 320px;
+  background: radial-gradient(circle, #4CAF50 0%, rgba(76, 175, 80, 0) 70%);
+  top: -140px;
+  right: -100px;
+  opacity: 0.30;
+}
+.docs-hero::after {
+  width: 280px;
+  height: 280px;
+  background: radial-gradient(circle, #71EEB8 0%, rgba(113, 238, 184, 0) 70%);
+  bottom: -140px;
+  left: -90px;
+  opacity: 0.40;
+}
+.docs-hero__pin {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+}
+.docs-hero__title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 2.5rem;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+  color: var(--ink);
+  margin: 0 0 0.75rem;
+  text-align: center;
+}
+.docs-hero__title .fy { color: var(--green-500); }
+.docs-hero__subtitle {
+  font-family: var(--font-body);
+  font-size: 1.0625rem;
+  line-height: 1.55;
+  color: var(--ink-muted);
+  margin: 0 auto;
+  max-width: 36rem;
   text-align: center;
 }
 
-.feature-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+/* =============================================================
+   Hero (homepage backup)
+   ============================================================= */
+.hero--telcofy {
+  background: var(--green-gradient);
+  color: var(--paper);
+  padding: 4rem 0;
+}
+.hero--telcofy .hero__title,
+.hero--telcofy .hero__subtitle {
+  font-family: var(--font-display);
+  color: var(--paper);
+}
+.hero--telcofy .hero__title {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.hero--telcofy .hero__subtitle {
+  font-weight: 400;
+  opacity: 0.92;
 }
 
+/* =============================================================
+   Cards — flat by default with a hairline border; lift only on
+   hover. Matches the frontend `<Card>` component spec.
+   ============================================================= */
+.card {
+  background: var(--paper);
+  border: 1px solid var(--paper-300);
+  border-radius: var(--radius-lg);
+  box-shadow: none;
+  transition: transform var(--dur-base) var(--ease-default),
+              box-shadow var(--dur-base) var(--ease-default),
+              border-color var(--dur-base) var(--ease-default);
+}
+.card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(76, 175, 80, 0.4);
+  box-shadow: var(--shadow-card);
+}
+
+.feature-card {
+  background: var(--paper);
+  padding: 2rem;
+  border: 1px solid var(--paper-300);
+  border-radius: var(--radius-lg);
+  box-shadow: none;
+  transition: transform var(--dur-base) var(--ease-default),
+              box-shadow var(--dur-base) var(--ease-default),
+              border-color var(--dur-base) var(--ease-default);
+  text-align: center;
+}
+.feature-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(76, 175, 80, 0.4);
+  box-shadow: var(--shadow-card);
+}
 .feature-card__icon {
   width: 3rem;
   height: 3rem;
   margin-bottom: 1rem;
-  color: var(--telcofy-seafoam);
+  color: var(--green-500);
+}
+
+/* =============================================================
+   Code blocks
+   ============================================================= */
+.prism-code {
+  border-left: 3px solid var(--green-500);
+  border-radius: var(--radius-md);
+}
+
+code {
+  font-family: var(--font-mono);
+  background: var(--paper-200);
+  border: 1px solid var(--paper-300);
+  border-radius: var(--radius-xs);
+  padding: 0.1em 0.35em;
+}
+
+/* =============================================================
+   Footer — ink background, muted text, green on hover.
+   ============================================================= */
+.footer {
+  background-color: var(--ink);
+  color: var(--ink-faint);
+}
+.footer__title {
+  color: var(--paper);
+  font-family: var(--font-display);
+  font-weight: 600;
+}
+.footer__link-item {
+  color: var(--ink-faint);
+}
+.footer__link-item:hover {
+  color: var(--green-500);
+  text-decoration: none;
+}
+
+/* =============================================================
+   Badges
+   ============================================================= */
+.badge--eu {
+  background-color: var(--ink);
+  color: var(--paper);
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* =============================================================
+   Markdown / blog content
+   ============================================================= */
+.markdown img {
+  border-radius: var(--radius-md);
+  border: 1px solid var(--paper-300);
+}
+/* Decorative brand artwork inside hero blocks shouldn't get the
+   content-image border treatment. */
+.docs-hero img,
+.markdown .docs-hero img {
+  border: none;
+  border-radius: 0;
+}
+
+.markdown blockquote {
+  border-left: 3px solid var(--green-500);
+  background: var(--green-50);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  color: var(--ink-soft);
+}
+
+.markdown a {
+  color: var(--green-600);
+  text-decoration: underline;
+  text-decoration-color: var(--paper-400);
+  text-underline-offset: 2px;
+  transition: text-decoration-color var(--dur-fast) var(--ease-default),
+              color var(--dur-fast) var(--ease-default);
+}
+.markdown a:hover {
+  color: var(--green-500);
+  text-decoration-color: var(--green-500);
 }

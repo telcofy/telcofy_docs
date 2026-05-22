@@ -61,7 +61,7 @@ const AnimatedTelcofyPin = ({ width = 100, height = 100, className = "" }) => {
             width: 16px;
             height: 16px;
             border-radius: 50%;
-            border: 1px solid #34d399;
+            border: 1px solid #4CAF50;
             opacity: 0.75;
             transform: translateX(-50%);
           }

@@ -5,7 +5,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 const config: Config = {
   title: 'Telcofy Documentation',
   tagline: 'Transform Telco Data into Value - EU Compliance & Analytics Platform',
-  favicon: 'img/logos/favicon_io/favicon-32x32.png',
+  favicon: 'brand/telcofy-mark.svg',
 
   url: 'https://docs.telcofy.ai',
   baseUrl: '/',
@@ -56,8 +56,8 @@ const config: Config = {
     navbar: {
       title: 'Telcofy',
       logo: {
-        alt: 'Telcofy Logo',
-        src: 'img/telcofyPin.png',
+        alt: 'Telcofy',
+        src: 'brand/telcofy-mark.svg',
       },
       items: [
         {
