@@ -410,16 +410,90 @@ Example response:
 
 > **Note:** The `/data-agg` endpoint is only available in the **Telcofy Dev environment** (`https://dev.data.api.telcofy.ai`). It requires a separate Dev API key. Contact [support@telcofy.ai](mailto:support@telcofy.ai) to get access to Telcofy Dev and test features under development.
 
-Use `/data-agg` to request Telcofy’s analytical products (Activities and Origin-Destination
-Matrix). Start with synchronous previews or submit asynchronous jobs that export detailed
-results to Cloud Storage.
+Use `/data-agg` to request Telcofy’s analytical products (Activities, Origin-Destination
+Matrix and Flow). Start with synchronous previews or submit asynchronous jobs that export
+detailed results to Cloud Storage.
 
-**Fetch a synchronous population aggregation** (feature preview):
+#### Synchronous data preview endpoint (GET `/data-agg` )
+
+Usage: quick preview of the data. Returns a maximum of one day of data. Not designed
+for querying historical data.
+
+**1. Flow data preview**:
+
+Example `flow` query — given a coordinate, resolves the nearest road link and returns its
+flow counts over the requested datetime range. For `country_code` `LAT`/`EST`, `datetime_to`
+is optional and defaults to the current datetime when omitted:
+
+
+```bash
+curl -sG "https://dev.data.api.telcofy.ai/data-agg" \
+  -H "x-api-key: $API_KEY" \
+  --data-urlencode "agg_type=flow" \
+  --data-urlencode "country_code=LAT" \
+  --data-urlencode "lat=56.628547" \
+  --data-urlencode "lon=23.755313" \
+  --data-urlencode "datetime_from=2026-07-15T10:00:00Z" | jq
+```
+
+Example response:
+
+```json
+{
+  "agg_type": "flow",
+  "country_code": "LAT",
+  "lat": 56.628547,
+  "lon": 23.755313,
+  "datetime_from": "2026-07-15T10:00:00.000Z",
+  "datetime_to": "2026-07-21T12:57:41.505Z",
+  "results": [
+    {
+      "link_id": 431208917,
+      "link_name": "Miera iela",
+      "link_type": "primary",
+      "distance_m": 12,
+      "datetime": { "value": "2026-07-15T10:00:00.000Z" },
+      "direction": -1,
+      "count": 39
+    },
+    {
+      "link_id": 431208917,
+      "link_name": "Miera iela",
+      "link_type": "primary",
+      "distance_m": 12,
+      "datetime": { "value": "2026-07-15T10:00:00.000Z" },
+      "direction": 1,
+      "count": 12
+    }
+  ]
+}
+```
+
+`results` continues with one row per hour (and per `direction`) up to `datetime_to`, all
+sharing the same nearest `link_id`.
+
+**2. Activity data preview**:
+
+Example `activities` query — returns aggregated activity counts (for example
+`sum_unique_people`) for one or more geographies (`geo_type`/`geo_ids`) within the
+requested `start_time`/`end_time` window, bucketed by `activity_type` (for example
+`hourly`):
 
 ```bash
 curl -s "https://data.api.telcofy.ai/data-agg?agg_type=activities&measure=sum_unique_people&start_time=2024-03-01T08:00:00Z&end_time=2024-03-01T09:00:00Z&activity_type=hourly&geo_type=grid_250m&geo_ids=22637506648500" \
   -H "x-api-key: $API_KEY" | jq ‘.results[0]’
 ```
+
+
+#### Asynchronous data aggregation endpoint  (POST `/data-agg` ) 
+
+**Fetch asynchronous aggregation job**
+
+For larger time ranges, or when you want the full result set exported to Cloud Storage
+rather than a 100-row inline preview, submit an asynchronous job instead of using the
+synchronous preview endpoint. The job runs as a BigQuery query you can poll for
+completion, then fetch either an inline preview or, when `full=true`, a Cloud Storage
+export path.
 
 **Step 1 — Submit an asynchronous aggregation job** (exports to Cloud Storage when `full=true`):
 
