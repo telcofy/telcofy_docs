@@ -454,7 +454,7 @@ Example response:
       "distance_m": 12,
       "datetime": { "value": "2026-07-15T10:00:00.000Z" },
       "direction": -1,
-      "count": 39
+      "people": 39
     },
     {
       "link_id": 431208917,
@@ -463,7 +463,7 @@ Example response:
       "distance_m": 12,
       "datetime": { "value": "2026-07-15T10:00:00.000Z" },
       "direction": 1,
-      "count": 12
+      "people": 12
     }
   ]
 }
