@@ -1,0 +1,10 @@
+{
+  "label": "Data Onboarding",
+  "position": 4,
+  "link": {
+    "type": "generated-index",
+    "title": "Data Onboarding",
+    "description": "How pseudonymised network data reaches Telcofy and becomes mobility intelligence",
+    "slug": "/data-onboarding"
+  }
+}

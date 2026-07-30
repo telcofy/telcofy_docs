@@ -33,6 +33,16 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
+      label: 'Data Onboarding',
+      items: [
+        'data-onboarding/overview',
+        'data-onboarding/pseudonymization',
+        'data-onboarding/probe-data-ingest',
+        'data-onboarding/probe-data-processing',
+      ],
+    },
+    {
+      type: 'category',
       label: 'Data Delivery',
       items: [
         'data-access/overview',
