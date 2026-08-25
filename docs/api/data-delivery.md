@@ -495,6 +495,12 @@ synchronous preview endpoint. The job runs as a BigQuery query you can poll for
 completion, then fetch either an inline preview or, when `full=true`, a Cloud Storage
 export path.
 
+The same submit → poll → fetch flow applies to every `agg_type`; only the request body
+and the shape of the `preview` rows change. See [`Activities`](#activities) below, and
+[`ODM`](#origindestination-matrix-odm) for the Origin-Destination Matrix product.
+
+#### Activities
+
 **Step 1 — Submit an asynchronous aggregation job** (exports to Cloud Storage when `full=true`):
 
 ```bash
@@ -554,6 +560,126 @@ When `full=true`, the results response returns a Cloud Storage path instead of a
 ```
 
 Download the exported files from Cloud Storage using the OAuth token retrieved in [Section 1](#1-download-cloud-storage-exports).
+
+#### Origin–Destination Matrix (ODM)
+
+Set `agg_type` to `"odm"` to request Telcofy's Origin-Destination Matrix product: trip
+volumes between an origin geography and a destination geography, bucketed over the
+requested time window.
+
+ODM jobs take the same `start_time`, `end_time`, `activity_type`, `measure` and `full`
+parameters as Activities, plus:
+
+- `origin_geo_type` / `origin_geo_ids` — the origin geography type and IDs.
+- `destination_geo_type` / `destination_geo_ids` — the destination geography type and IDs.
+- `country_code` — `"NOR"`, `"EST"`, etc. 
+
+Valid values for `origin_geo_type`/`destination_geo_type` are `grid_250m`, `grid_1000m`,
+`admin_level_2`, `admin_level_4` and `osm_links` (`NOR` only — `EST` is restricted to
+`grid_1000m`). `measure` is still required by the API, but for ODM it's only used to name
+the Cloud Storage export folder when `full=true` — it doesn't select or filter columns;
+every ODM row returns the same fixed set of fields.
+
+**Step 1 — Submit an asynchronous ODM job:**
+
+```bash
+curl -s -X POST https://dev.data.api.telcofy.ai/data-agg \
+  -H "x-api-key: $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+        "agg_type": "odm",
+        "measure": "trips",
+        "start_time": "2024-03-01T08:00:00Z",
+        "end_time": "2024-03-01T08:59:59Z",
+        "activity_type": "hourly",
+        "country_code": "NOR",
+        "origin_geo_type": "admin_level_4",
+        "origin_geo_ids": [3010104],
+        "destination_geo_type": "admin_level_4",
+        "destination_geo_ids": [3012903],
+        "full": false
+      }'
+```
+
+Example response:
+
+```json
+{"job_id":"7a2e0c9d-1f34-4b6e-9d21-8e7a5c3b0f11","status":"queued","status_url":"/data-agg/status/7a2e0c9d-1f34-4b6e-9d21-8e7a5c3b0f11","results_url":"/data-agg/results/7a2e0c9d-1f34-4b6e-9d21-8e7a5c3b0f11"}
+```
+
+Estonia (`country_code: "EST"`) requires `grid_1000m` on both sides. `geo_ids` can be
+passed as strings or numbers — the API stringifies them either way:
+
+```python
+import requests
+
+requests.request(
+    "POST",
+    "https://data.api.telcofy.ai/data-agg",
+    headers={"x-api-key": API_KEY, "Content-Type": "application/json"},
+    json={
+        "agg_type": "odm",
+        "measure": "sum_unique_people",
+        "start_time": "2024-03-01T08:00:00Z",
+        "end_time": "2024-03-01T19:00:00Z",
+        "activity_type": "daily",
+        "origin_geo_type": "grid_1000m",
+        "origin_geo_ids": ["41", "42"],
+        "destination_geo_type": "grid_1000m",
+        "destination_geo_ids": ["18530", "19648"],
+        "full": "false",
+        "country_code": "EST"
+    },
+)
+```
+
+**Step 2 — Poll job status** exactly as described in [Step 2 above](#activities) using
+the returned `status_url`.
+
+**Step 3 — Fetch results:**
+
+```bash
+curl -s -X GET https://dev.data.api.telcofy.ai/data-agg/results/7a2e0c9d-1f34-4b6e-9d21-8e7a5c3b0f11 \
+  -H "x-api-key: $API_KEY"
+```
+
+Example response (`full=false` — inline preview), with one entry per origin/destination
+pair per day:
+
+```json
+{
+  "job_id": "7a2e0c9d-1f34-4b6e-9d21-8e7a5c3b0f11",
+  "status": "completed",
+  "country_code": "EST",
+  "preview": [
+    {
+      "batch_date": "2024-03-01",
+      "origin_geo_id": 18530,
+      "destination_geo_id": 41,
+      "General_Distance": 4821.3,
+      "Average_Speed": 32.4,
+      "trips": 142
+    }
+  ]
+}
+```
+
+| Field | Type | Description |
+| ----- | ---- | ----------- |
+| `batch_date` | string | Date the aggregated row covers. |
+| `origin_geo_id` / `destination_geo_id` | number | IDs of the origin/destination geography, matching `origin_geo_type`/`destination_geo_type`. |
+| `General_Distance` *(optional)* | number | Straight-line distance between origin and destination, in meters. |
+| `Average_Speed` *(optional)* | number | Average travel speed for the trip, in km/h. |
+| `trips` | number | Estimated trip count for the origin/destination pair. |
+
+When `full=true`, results are returned the same way as Activities — a Cloud Storage
+`http_path` instead of an inline `preview`.
+
+> **Multi-modal split:** a per-mode journey-time breakdown (walk / bike / car / transit)
+> can be added to ODM, but availability depends on your country. `General_Distance` and
+> `Average_Speed` are likewise optional fields whose availability depends on your
+> country. Contact [support@telcofy.ai](mailto:support@telcofy.ai) to check what's
+> available for your country.
 
 ---
 
