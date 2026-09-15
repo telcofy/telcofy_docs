@@ -388,7 +388,7 @@ Example response:
 {
   "rows": [
     {
-      "timestamp": { "value": "2026-04-20T13:40:12.000Z" },
+      "timestamp": "2026-04-20T13:40:12.000Z",
       "target_id": "snS123456sDQnAwk",
       "target_name": "my_area1",
       "result": "SUCCESS",
@@ -400,7 +400,7 @@ Example response:
 
 | Field | Type | Description |
 | ----- | ---- | ----------- |
-| `timestamp.value` | ISO 8601 string | Time the measurement was recorded. |
+| `timestamp` | ISO 8601 string | Time the measurement was recorded. |
 | `target_id` | string | Internal ID of the monitored admin map. |
 | `target_name` | string | Human-readable name of the admin map. |
 | `result` | string | Processing status (`SUCCESS` or error code). |
@@ -422,8 +422,9 @@ for querying historical data.
 **1. Flow data preview**:
 
 Example `flow` query — given a coordinate, resolves the nearest road link and returns its
-flow counts over the requested datetime range. For `country_code` `LAT`/`EST`, `datetime_to`
-is optional and defaults to the current datetime when omitted:
+flow counts over the requested datetime range. For `country_code` `LAT`/`EST`, `end_time`
+is optional and defaults to the current datetime when omitted. The legacy
+`datetime_from`/`datetime_to` parameters are still accepted as aliases but are deprecated:
 
 
 ```bash
@@ -433,7 +434,7 @@ curl -sG "https://dev.data.api.telcofy.ai/data-agg" \
   --data-urlencode "country_code=LAT" \
   --data-urlencode "lat=56.628547" \
   --data-urlencode "lon=23.755313" \
-  --data-urlencode "datetime_from=2026-07-15T10:00:00Z" | jq
+  --data-urlencode "start_time=2026-07-15T10:00:00Z" | jq
 ```
 
 Example response:
@@ -444,15 +445,15 @@ Example response:
   "country_code": "LAT",
   "lat": 56.628547,
   "lon": 23.755313,
-  "datetime_from": "2026-07-15T10:00:00.000Z",
-  "datetime_to": "2026-07-21T12:57:41.505Z",
+  "start_time": "2026-07-15T10:00:00.000Z",
+  "end_time": "2026-07-21T12:57:41.505Z",
   "results": [
     {
       "link_id": 431208917,
       "link_name": "Miera iela",
       "link_type": "primary",
       "distance_m": 12,
-      "datetime": { "value": "2026-07-15T10:00:00.000Z" },
+      "time_bucket": "2026-07-15T10:00:00.000Z",
       "direction": -1,
       "people": 39
     },
@@ -461,7 +462,7 @@ Example response:
       "link_name": "Miera iela",
       "link_type": "primary",
       "distance_m": 12,
-      "datetime": { "value": "2026-07-15T10:00:00.000Z" },
+      "time_bucket": "2026-07-15T10:00:00.000Z",
       "direction": 1,
       "people": 12
     }
@@ -469,8 +470,12 @@ Example response:
 }
 ```
 
-`results` continues with one row per hour (and per `direction`) up to `datetime_to`, all
+`results` continues with one row per hour (and per `direction`) up to `end_time`, all
 sharing the same nearest `link_id`.
+
+> **Note:** flow rows do not yet carry a `type` field naming the bucket granularity
+> (`hourly` / `daily`) the way Activities and ODM rows do. It will be added in a future
+> release, following the same logic as those products.
 
 **2. Activity data preview**:
 
@@ -537,8 +542,12 @@ curl -s -X GET https://dev.data.api.telcofy.ai/data-agg/status/12bd1616-002b-43c
 Example response:
 
 ```json
-{"job_id":"12bd1616-002b-43c5-bc0c-422a2110c481","status":"completed","progress":100,"created_at":"2026-05-05T13:15:06.888Z","start_time":"2026-05-05T13:15:07.470Z","end_time":"2026-05-05T13:15:09.194Z","estimated_completion":null,"error":null}
+{"job_id":"12bd1616-002b-43c5-bc0c-422a2110c481","status":"completed","progress":100,"created_at":"2026-05-05T13:15:06.888Z","started_at":"2026-05-05T13:15:07.470Z","finished_at":"2026-05-05T13:15:09.194Z","estimated_completion":null,"error":null}
 ```
+
+`created_at`, `started_at` and `finished_at` describe the **job's** lifecycle. They are
+distinct from `start_time`/`end_time`, which always describe the **data** window you
+requested.
 
 **Step 3 — Fetch results:**
 
@@ -550,7 +559,7 @@ curl -s -X GET https://dev.data.api.telcofy.ai/data-agg/results/12bd1616-002b-43
 Example response (`full=false` — inline preview):
 
 ```json
-{"job_id":"12bd1616-002b-43c5-bc0c-422a2110c481","status":"completed","country_code":"NOR","preview":[{"sum_unique_people":1833,"time_bucket":"2024-03-01 08:00:00","geo_id":3010104,"geo_name":"Sentrum 1 - Rode 4","type":"hourly"}]}
+{"job_id":"12bd1616-002b-43c5-bc0c-422a2110c481","status":"completed","country_code":"NOR","preview":[{"sum_unique_people":1833,"time_bucket":"2024-03-01T08:00:00.000Z","geo_id":3010104,"geo_name":"Sentrum 1 - Rode 4","type":"hourly"}]}
 ```
 
 When `full=true`, the results response returns a Cloud Storage path instead of an inline preview:
