@@ -17,7 +17,7 @@ const contacts = [
     email: "tom@telcofy.ai", 
     phone: "+47 918 90 064", 
     role: "Chief Commercial Officer",
-    image: "img/tom_profile.png", 
+    image: "img/tom_profile.jpg", 
     expertise: "Business Development & Partnerships"
   }
 ];
