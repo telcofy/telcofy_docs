@@ -492,3 +492,26 @@ code {
   color: var(--green-500);
   text-decoration-color: var(--green-500);
 }
+
+/* Collapsible <details> blocks: a neutral panel with a green accent
+   instead of Infima's blue info alert, and a denser table inside so
+   long reference tables stay scannable when expanded. */
+.markdown details.alert {
+  --ifm-alert-background-color: var(--paper-100);
+  --ifm-alert-foreground-color: var(--ink-soft);
+  --ifm-alert-border-color: var(--paper-300);
+  --docusaurus-details-decoration-color: var(--green-500);
+  border-left: 3px solid var(--green-500);
+}
+.markdown details > summary {
+  font-weight: 600;
+  color: var(--ink);
+}
+.markdown details table {
+  --ifm-table-cell-padding: 0.5rem 0.625rem;
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+.markdown details td {
+  vertical-align: top;
+}
