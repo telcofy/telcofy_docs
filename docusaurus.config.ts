@@ -23,6 +23,9 @@ const config: Config = {
     locales: ['en'],
   },
 
+  // Reports page views on every route change, behind the cookie consent gate.
+  clientModules: [require.resolve('./src/clientModules/routeAnalytics.ts')],
+
   presets: [
     [
       'classic',
@@ -73,6 +76,13 @@ const config: Config = {
           position: 'right',
         },
       ],
+    },
+    // Kept deliberately minimal: it exists so the cookie notice and the
+    // "Cookie settings" control are reachable from every page (see
+    // src/theme/Footer/Copyright).
+    footer: {
+      style: 'dark',
+      copyright: `© ${new Date().getFullYear()} Telcofy`,
     },
     prism: {
       theme: prismThemes.github,
