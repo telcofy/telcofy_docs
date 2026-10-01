@@ -1,0 +1,86 @@
+/* Sits above the navbar (z-index 9999) and the mobile drawer (10000). */
+.banner {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 10001;
+  padding: 1rem;
+}
+
+.card {
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: 1.25rem;
+  background: var(--paper);
+  border: 1px solid var(--paper-300);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+
+.title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.body {
+  margin: 0.5rem 0 0;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--ink-muted);
+}
+
+.link {
+  font-weight: 500;
+  color: var(--green-600);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.link:hover {
+  color: var(--green-700);
+}
+
+/* Accept and Decline are the same size and weight: declining has to be as
+   easy as accepting. */
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  margin-top: 1.25rem;
+}
+
+.actions > button {
+  flex: 1 1 0;
+}
+
+@media (min-width: 640px) {
+  .banner {
+    padding: 1.5rem;
+  }
+
+  .card {
+    padding: 1.5rem;
+  }
+
+  .actions {
+    flex-direction: row;
+  }
+}
+
+.footerLinks {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+/* A <button> that reads as a footer link. */
+.linkButton {
+  padding: 0;
+  font: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}

@@ -10,7 +10,16 @@
  * picks up the brand without further intervention.
  */
 
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+/* Fonts are self-hosted (@fontsource) rather than loaded from Google Fonts,
+   so no visitor's IP address is sent to a third party just to render text. */
+@import '@fontsource/inter/400.css';
+@import '@fontsource/inter/500.css';
+@import '@fontsource/inter/600.css';
+@import '@fontsource/inter/700.css';
+@import '@fontsource/poppins/400.css';
+@import '@fontsource/poppins/500.css';
+@import '@fontsource/poppins/600.css';
+@import '@fontsource/poppins/700.css';
 
 :root {
   /* ---------- Ink (neutrals) ---------- */
