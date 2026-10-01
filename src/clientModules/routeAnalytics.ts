@@ -1,8 +1,14 @@
 import type {ClientModule} from '@docusaurus/types';
-import {trackPageView} from '../lib/analytics';
+import {isTagLoaded, streamFor, trackPageView} from '../lib/analytics';
 
-/** Longest we will wait for a page to settle on its own title. */
-const TITLE_TIMEOUT_MS = 500;
+/**
+ * Longest we will wait for a page to settle on its own title. The title
+ * normally lands within ~30ms, so this only matters when the main thread is
+ * busy (a blog index full of large images) or the new page genuinely shares
+ * its predecessor's title. Too short a cap mislabels pages: at 500ms a
+ * slow render reported a blog post under the blog index's title.
+ */
+const TITLE_TIMEOUT_MS = 3000;
 
 /**
  * Run `callback` once the document title has been updated for the new route.
@@ -18,13 +24,13 @@ function afterTitleSettles(callback: () => void): void {
   const previousTitle = document.title;
   let done = false;
   let observer: MutationObserver | undefined;
-  let timer: ReturnType<typeof setTimeout>;
 
   const finish = () => {
     if (done) return;
     done = true;
     observer?.disconnect();
     clearTimeout(timer);
+    window.removeEventListener('pagehide', finish);
     callback();
   };
 
@@ -39,7 +45,9 @@ function afterTitleSettles(callback: () => void): void {
     });
   }
 
-  timer = setTimeout(finish, TITLE_TIMEOUT_MS);
+  const timer = setTimeout(finish, TITLE_TIMEOUT_MS);
+  // A visitor who leaves while the hit is pending must still be counted.
+  window.addEventListener('pagehide', finish);
 }
 
 /**
@@ -48,6 +56,20 @@ function afterTitleSettles(callback: () => void): void {
  */
 const routeAnalytics: ClientModule = {
   onRouteDidUpdate({location, previousLocation}) {
+    // Docs and blog are separate GA streams, and a document may only ever be
+    // configured for one of them (see ensureConfigured). So when a visitor
+    // whose tag is already loaded crosses between the two, reload into the new
+    // section instead of transitioning in-app. The old page's closing events
+    // then go to its own stream, and the new document starts clean.
+    if (
+      previousLocation &&
+      isTagLoaded() &&
+      streamFor(previousLocation.pathname) !== streamFor(location.pathname)
+    ) {
+      window.location.reload();
+      return;
+    }
+
     // Hash-only changes are in-page anchor jumps, not page views. Query strings
     // are kept so campaign (utm_*) parameters survive.
     if (

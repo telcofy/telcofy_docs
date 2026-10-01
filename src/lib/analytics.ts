@@ -7,8 +7,8 @@ import {hasAnalyticsConsent} from './consent';
  * stream is chosen by URL path rather than by hostname. See `streamFor`.
  */
 export const STREAMS = {
-  docs: 'G-XXXXXXXXXX',
-  blog: 'G-XXXXXXXXXX',
+  docs: 'G-KEZW7YR2RX',
+  blog: 'G-3BYYJ9MF33',
 } as const;
 
 export type Stream = keyof typeof STREAMS;
@@ -34,19 +34,30 @@ function isConfigured(id: string): boolean {
 }
 
 let tagInjected = false;
-const configured = new Set<string>();
+let configuredId: string | null = null;
+
+/** True once gtag.js has been put on this page. */
+export function isTagLoaded(): boolean {
+  return tagInjected;
+}
 
 /**
- * Inject gtag.js and configure a stream.
+ * Inject gtag.js and configure the stream for this document.
  *
  * The tag is deliberately absent from the static HTML and only ever reaches
  * the page from behind a consent check, so a visitor who has not accepted
  * never contacts Google at all — no request, no cookie, no IP disclosure.
  *
- * Streams are configured lazily, on first use, so a visitor who only reads
- * the docs is never given the blog stream's session cookie (and vice versa).
+ * A document is only ever configured for ONE stream. gtag sends its automatic
+ * events (session_start, user_engagement, ...) to every stream configured on
+ * the page, so configuring a second would tag blog readers under docs, and
+ * the reverse. The route listener enforces this by turning a docs <-> blog
+ * navigation into a real page load; this is the backstop that refuses to mix
+ * streams if that ever fails. Returns false when the hit must be dropped.
  */
-function ensureConfigured(id: string): void {
+function ensureConfigured(id: string): boolean {
+  if (configuredId !== null && configuredId !== id) return false;
+
   const firstLoad = !tagInjected;
 
   if (firstLoad) {
@@ -60,8 +71,8 @@ function ensureConfigured(id: string): void {
     window.gtag('js', new Date());
   }
 
-  if (!configured.has(id)) {
-    configured.add(id);
+  if (configuredId === null) {
+    configuredId = id;
     // send_page_view is off because this is a single-page app: trackPageView
     // reports every view, including the first.
     window.gtag('config', id, {send_page_view: false});
@@ -73,6 +84,8 @@ function ensureConfigured(id: string): void {
     script.src = `https://www.googletagmanager.com/gtag/js?id=${id}`;
     document.head.appendChild(script);
   }
+
+  return true;
 }
 
 /**
@@ -101,7 +114,7 @@ export function trackPageView({
     window[`ga-disable-${streamId}`] = false;
   });
 
-  ensureConfigured(id);
+  if (!ensureConfigured(id)) return;
 
   window.gtag('event', 'page_view', {
     page_path: `${pathname}${search}`,
