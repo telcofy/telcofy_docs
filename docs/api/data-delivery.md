@@ -690,6 +690,78 @@ When `full=true`, results are returned the same way as Activities — a Cloud St
 > country. Contact [support@telcofy.ai](mailto:support@telcofy.ai) to check what's
 > available for your country.
 
+### Data Availability API (`/data-availability`)
+
+> **Note:** The `/data-availability` endpoint is only available in the **Telcofy Dev environment** (`https://dev.data.api.telcofy.ai`). It requires a separate Dev API key. Contact [support@telcofy.ai](mailto:support@telcofy.ai) to get access to Telcofy Dev and test features under development.
+
+Use `GET /data-availability` to check which daily batches of a data product have been
+delivered before you query or export them. The response lists one row per table and
+`batch_date` that contains data, together with its row count and the time it was last
+updated. Only datasets your account has been granted access to are returned.
+
+**Query parameters** — all optional. Without any parameters, the endpoint returns every
+dataset and date you have access to, across all supported countries.
+
+| Parameter | Supported values | Description |
+| --------- | ---------------- | ----------- |
+| `country` | `LV` (Latvia), `LT` (Lithuania) | Country to check. The 3-letter codes `LAT` and `LTU` are also accepted; matching is case-insensitive. Omit to check every country you have access to. |
+| `dataset` | `flows`, `odm` | Data product to check. Omit to return all datasets you have access to. |
+| `start_time` | `YYYY-MM-DD` or ISO 8601 timestamp | Earliest `batch_date` to include (inclusive). Only the date part is used, so `2026-09-01T12:00:00Z` is treated as `2026-09-01`. |
+| `end_time` | `YYYY-MM-DD` or ISO 8601 timestamp | Latest `batch_date` to include (inclusive). Must not be before `start_time`. |
+
+**Check everything available for Latvia:**
+
+```bash
+curl -s "https://dev.data.api.telcofy.ai/data-availability?country=LV" \
+  -H "x-api-key: $API_KEY" | jq
+```
+
+Example response:
+
+```json
+{
+  "results": [
+    {
+      "country_code": "LAT",
+      "dataset": "flows",
+      "table_name": "flows_daily",
+      "batch_date": "2026-09-03",
+      "total_rows": 220447,
+      "last_modified_time": "2026-10-05T06:11:37.008Z"
+    }
+  ]
+}
+```
+
+**Check ODM availability for Lithuania in September 2026:**
+
+```bash
+curl -sG "https://dev.data.api.telcofy.ai/data-availability" \
+  -H "x-api-key: $API_KEY" \
+  --data-urlencode "country=LT" \
+  --data-urlencode "dataset=odm" \
+  --data-urlencode "start_time=2026-09-01" \
+  --data-urlencode "end_time=2026-09-30" | jq
+```
+
+Rows are sorted by `dataset`, `table_name` and then `batch_date`.
+
+| Field | Type | Description |
+| ----- | ---- | ----------- |
+| `country_code` | string | 3-letter country code (`LAT` or `LTU`). |
+| `dataset` | string | Data product (`flows` or `odm`). |
+| `table_name` | string | Table holding the data: `flows_daily`, `flows_hourly`, `odm_daily` or `odm_hourly`. |
+| `batch_date` | string | Date (`YYYY-MM-DD`) of the delivered batch. |
+| `total_rows` | integer | Number of rows in that batch. Batches with no rows are not listed. |
+| `last_modified_time` | ISO 8601 string | When the batch was last written or refreshed. |
+
+**Errors**
+
+| Status | When |
+| ------ | ---- |
+| `400` | `country`, `dataset`, `start_time` or `end_time` is invalid, or `start_time` is after `end_time`. The `error` message names the expected values. |
+| `403` | Your account has no data product access (in the requested country). |
+
 ---
 
 ## 4. Keep Exploring
