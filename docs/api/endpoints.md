@@ -34,6 +34,7 @@ See `authentication.md` for header requirements and token exchange details.
 | GET | `/data-agg/status/:jobId` | Check aggregation job status and progress. | `x-api-key` |
 | GET | `/data-agg/results/:jobId` | Retrieve preview results or export metadata (`?full=true`). | `x-api-key` |
 | GET | `/data-agg/jobs` | List historical aggregation jobs for the caller. | `x-api-key` |
+| GET | `/data-availability` | List delivered daily batches per dataset (optional `country`, `dataset`, `start_time`, `end_time`). Dev environment only. See [Data Delivery Guide](data-delivery.md#data-availability-api-data-availability). | `x-api-key` |
 | POST | `/admin/realtime` | Enable or disable realtime monitoring for a saved map. | `x-api-key` |
 | GET | `/admin/realtime/data` | Fetch the latest realtime headcount rows for all monitored maps. | `x-api-key` |
 
