@@ -474,6 +474,15 @@ Example response:
 `results` continues with one row per hour (and per `direction`) up to `end_time`, all
 sharing the same nearest `link_id`.
 
+For Estonia (`EST`), the coordinate snaps to the nearest road that has flow data in the
+requested window, so `distance_m` can be larger than the nearest street. If no road has flow
+data in the window, `results` holds a single row for the nearest way with `time_bucket`,
+`direction` and `people` set to `null`, so you can tell an empty window from a failed lookup:
+
+```json
+{"link_id":4853860,"link_name":"Vana-Posti","link_type":"pedestrian","distance_m":5,"time_bucket":null,"direction":null,"people":null}
+```
+
 > **Note:** flow rows do not yet carry a `type` field naming the bucket granularity
 > (`hourly` / `daily`) the way Activities and ODM rows do. It will be added in a future
 > release, following the same logic as those products.
