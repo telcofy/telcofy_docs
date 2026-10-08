@@ -417,7 +417,8 @@ detailed results to Cloud Storage.
 #### Synchronous data preview endpoint (GET `/data-agg` )
 
 Usage: quick preview of the data. Returns a maximum of one day of data. Not designed
-for querying historical data.
+for querying historical data. GET supports `agg_type` `activities` and `flow`; request ODM
+with [POST `/data-agg`](#origindestination-matrix-odm).
 
 **1. Flow data preview**:
 
@@ -578,10 +579,10 @@ which dates are available.
 
 | Parameter | Supported values for `EST` |
 | --------- | -------------------------- |
-| `geo_type` | `grid_1000m` (INSPIRE 1 km cells). `admin_level_4` is not available for Estonia. |
-| `geo_ids` | Numeric `grid_1000m` IDs, as returned by the Maps API. |
+| `geo_type` | `grid_1000m` (INSPIRE 1 km cells) or `admin_level_2` (municipalities). `admin_level_4` is not available for Estonia. |
+| `geo_ids` | Numeric IDs as returned by the Maps API: `grid_1000m` cell IDs, or EHAK municipality codes for `admin_level_2` (for example `784` = Tallinn). |
 | `activity_type` | `hourly` or `daily` |
-| `measure` | `sum_unique_people`, `stays_count`, `stays_dwell_minutes` or `stays_devices` |
+| `measure` | `grid_1000m`: `sum_unique_people`, `stays_count`, `stays_dwell_minutes` or `stays_devices`. `admin_level_2`: `sum_unique_people` only. |
 
 ```bash
 curl -s -X POST https://dev.data.api.telcofy.ai/data-agg \
@@ -611,6 +612,28 @@ For Estonia, `geo_name` is the INSPIRE cell ID and `time_bucket` is a UTC string
 overlaps the requested `start_time`/`end_time` window. Cells with fewer than 5 people in a
 bucket are not published at 1 km, so they are missing from the results rather than
 returned as zero.
+
+`admin_level_2` returns full municipality totals: each person is counted once per
+municipality and bucket. Do not add up `grid_1000m` cells to get a municipality figure:
+someone seen in several cells would be counted several times, and cells below 5 people are
+missing. Example daily row: `{"sum_unique_people":539446,"time_bucket":"2025-10-14","geo_id":784,"geo_name":"Tallinn","type":"daily"}`.
+An hour is withheld (missing from the results) when publishing it would reveal fewer than
+5 people.
+
+The GET preview accepts the same Estonian parameters, plus `country_code=EST`:
+
+```bash
+curl -sG "https://dev.data.api.telcofy.ai/data-agg" \
+  -H "x-api-key: $API_KEY" \
+  --data-urlencode "agg_type=activities" \
+  --data-urlencode "country_code=EST" \
+  --data-urlencode "measure=sum_unique_people" \
+  --data-urlencode "activity_type=daily" \
+  --data-urlencode "geo_type=admin_level_2" \
+  --data-urlencode "geo_ids=784" \
+  --data-urlencode "start_time=2025-10-14T00:00:00Z" \
+  --data-urlencode "end_time=2025-10-15T00:00:00Z" | jq
+```
 
 #### Origin–Destination Matrix (ODM)
 
@@ -826,7 +849,7 @@ Rows are sorted by `dataset`, `table_name` and then `batch_date`.
 | ----- | ---- | ----------- |
 | `country_code` | string | 3-letter country code (`LAT`, `LTU` or `EST`). |
 | `dataset` | string | Data product (`flows`, `odm` or `activities`). |
-| `table_name` | string | Table holding the data: `flows_daily`, `flows_hourly`, `odm_daily`, `odm_hourly`, or for `activities` `activity_hourly`, `activity_daily`, `activity_dwell` (stays by dwell-time band) and `activity_destrank` (stays at each area's top-ranked destinations). |
+| `table_name` | string | Table holding the data: `flows_daily`, `flows_hourly`, `odm_daily`, `odm_hourly`, or for `activities` `activity_hourly`, `activity_daily`, `activity_dwell` (stays by dwell-time band), `activity_destrank` (stays at each area's top-ranked destinations), and `activity_admin_daily` / `activity_admin_hourly` (municipality, county and country totals). |
 | `batch_date` | string | Date (`YYYY-MM-DD`) of the delivered batch. |
 | `total_rows` | integer | Number of rows in that batch. Batches with no rows are not listed. |
 | `last_modified_time` | ISO 8601 string | When the batch was last written or refreshed. |
