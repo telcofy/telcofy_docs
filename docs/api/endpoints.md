@@ -29,8 +29,8 @@ See `authentication.md` for header requirements and token exchange details.
 
 | Method | Path | Description | Auth |
 | ------ | ---- | ----------- | ---- |
-| GET | `/data-agg` | Run a synchronous aggregation (`activities` or `trips`). | `x-api-key` |
-| POST | `/data-agg` | Submit an aggregation job (`full=true` exports to Cloud Storage). | `x-api-key` |
+| GET | `/data-agg` | Run a synchronous preview (`activities` or `flow`; ODM is POST only). | `x-api-key` |
+| POST | `/data-agg` | Submit an aggregation job for delivered data (`activities`, `odm`, `flow`; `full=true` exports to Cloud Storage). | `x-api-key` |
 | GET | `/data-agg/status/:jobId` | Check aggregation job status and progress. | `x-api-key` |
 | GET | `/data-agg/results/:jobId` | Retrieve preview results or export metadata (`?full=true`). | `x-api-key` |
 | GET | `/data-agg/jobs` | List historical aggregation jobs for the caller. | `x-api-key` |
