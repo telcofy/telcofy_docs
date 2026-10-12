@@ -427,9 +427,15 @@ which dates exist before you query. `country_code` defaults to `NOR`.
 
 Any other combination returns `400` with the supported values.
 
-> **Modelled data:** the Estonian and Norwegian data are modelled, not measured from mobile
-> network data. They come from an activity-based travel model of all residents, calibrated
-> to national travel and labour statistics. Flows cover residents' cars only.
+> **Modelled data:** the Estonian and Norwegian data come from an activity-based travel
+> model of all residents, calibrated to national travel and labour statistics, not from mobile
+> network measurements. Norwegian flows cover residents' cars only.
+>
+> **Estonia adds a long-distance layer:** trips of 50 km or more come from mobile phone data
+> and are added to the modelled trips. This layer is part of Estonian **flows** (the `people`
+> counts on intercity roads), but not of the Estonian **ODM** that `/data-agg` serves today:
+> the layer's trips are published for municipality pairs, which `/data-agg` doesn't offer yet,
+> so 1 km ODM rows are modelled trips only. Estonian activities are fully modelled.
 
 #### Synchronous data preview endpoint (GET `/data-agg` )
 
@@ -781,7 +787,8 @@ When `full=true`, results are returned the same way as Activities — a Cloud St
 > **Small flows (Latvia, Lithuania, Estonia):** origin/destination pairs with fewer than 5
 > trips are not published at 1 km; they are only counted in coarser aggregates that
 > `/data-agg` does not serve yet. Summing 1 km pairs therefore undercounts total trips (in
-> Estonia about 77% of daily trips are at 1 km). Norway has no such suppression: every pair
+> Estonia 73–77% of daily trips are at 1 km, depending on the day; the rest are coarser
+> aggregates, including the long-distance layer). Norway has no such suppression: every pair
 > with a trip is published at grunnkrets level.
 
 > **Optional fields:** `General_Distance` and `Average_Speed` are `null` where the delivery
