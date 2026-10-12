@@ -508,9 +508,37 @@ failed lookup:
 {"link_id":4853860,"link_name":"Vana-Posti","link_type":"pedestrian","distance_m":5,"time_bucket":null,"direction":null,"people":null}
 ```
 
-Flows are hourly. In Estonia an hour with fewer than 5 people on a road is not published,
-so a quiet road (about a quarter of roads with traffic) has no hourly rows, and the lookup
-snaps past it to a busier road.
+**Hourly vs daily (Estonia).** Flow is hourly by default. In Estonia an hour with fewer than 5
+people on a road is not published, so a quiet road (about a quarter of roads with traffic) has
+no hourly rows, and the hourly lookup snaps past it to a busier road. Add
+`activity_type=daily` to read the daily flow instead: it snaps to the nearest road with any
+daily figure in the window, so a quiet residential street returns its own count. `daily` is
+available for `EST` only; other countries return `400`.
+
+```bash
+curl -sG "https://dev.data.api.telcofy.ai/data-agg" \
+  -H "x-api-key: $API_KEY" \
+  --data-urlencode "agg_type=flow" \
+  --data-urlencode "country_code=EST" \
+  --data-urlencode "activity_type=daily" \
+  --data-urlencode "lat=59.425995" \
+  --data-urlencode "lon=24.704615" \
+  --data-urlencode "start_time=2025-10-14T00:00:00Z" \
+  --data-urlencode "end_time=2025-10-15T00:00:00Z" | jq
+```
+
+```json
+{"link_id":22930029,"link_name":"Mehaanika","link_type":"residential","distance_m":1,"batch_date":"2025-10-14","time_bucket":"2025-10-13T21:00:00.000Z","direction":-1,"people":38,"people_display":"38"}
+```
+
+- One row per day and `direction`. A day is returned when its date (a UTC day, as for activities)
+  overlaps the requested window. `batch_date` is the local (Estonian) date.
+- `time_bucket` is the start of the daily bucket, which runs from 00:00 local time to 04:00 local
+  time the next day (so `2025-10-13T21:00:00Z` for 14 October in summer time).
+- `people` is the number of people on the road in that direction that day. Under 5 people the
+  figure is not published: `people` is `null` and `people_display` is `"<5"`. It is never
+  returned as zero. For other rows `people_display` is `people` as text.
+- Hourly rows have no `batch_date` or `people_display`.
 
 > **Note:** flow rows do not yet carry a `type` field naming the bucket granularity
 > (`hourly` / `daily`) the way Activities and ODM rows do. It will be added in a future
@@ -631,7 +659,7 @@ which dates are available.
 | `geo_type` | `grid_1000m` (INSPIRE 1 km cells) or `admin_level_2` (municipalities). `admin_level_4` is not available for Estonia. |
 | `geo_ids` | Numeric IDs as returned by the Maps API: `grid_1000m` cell IDs, or EHAK municipality codes for `admin_level_2` (for example `784` = Tallinn). |
 | `activity_type` | `hourly` or `daily` |
-| `measure` | `grid_1000m`: `sum_unique_people`, `stays_count`, `stays_dwell_minutes` or `stays_devices`. `admin_level_2`: `sum_unique_people` only. |
+| `measure` | `grid_1000m`: `sum_unique_people`, `stays_count`, `stays_dwell_minutes` or `stays_devices`; with `activity_type=daily` also `sum_people_home`, `sum_people_work` or `sum_people_visitors` (below). `admin_level_2`: `sum_unique_people` only. |
 
 The request in Step 1 above is an Estonian example. `geo_name` is the INSPIRE cell ID for
 `grid_1000m` and the municipality name for `admin_level_2`. `time_bucket` is a UTC string:
@@ -646,6 +674,20 @@ someone seen in several cells would be counted several times, and cells below 5 
 missing. Example daily row: `{"sum_unique_people":539446,"time_bucket":"2025-10-14","geo_id":784,"geo_name":"Tallinn","type":"daily"}`.
 An hour is withheld (missing from the results) when publishing it would reveal fewer than
 5 people.
+
+**Home, work and visitors (daily, `grid_1000m` only).** These measures split the people seen in a
+cell on a day by whose place it is:
+
+| Measure | Meaning |
+| ------- | ------- |
+| `sum_people_home` | People whose home is in the cell |
+| `sum_people_work` | People whose usual work or school place is in the cell |
+| `sum_people_visitors` | Everyone else seen in the cell (visitors) |
+
+When all three are published they add up to `sum_unique_people`. A group of 1 to 4 people is not published and
+comes back as `null`, never as zero (a `0` means no one). They are not available hourly, for
+`admin_level_2` or for other countries; those requests return `400`. Example daily row:
+`{"sum_people_home":4629,"time_bucket":"2025-10-14","geo_id":40176,"geo_name":"1kmN4125E5151","type":"daily"}`.
 
 The GET preview accepts the same Estonian parameters, plus `country_code=EST`:
 
