@@ -489,7 +489,7 @@ which dates exist before you query. `country_code` defaults to `NOR`.
 | -------------- | ---------- | ---------------------------------------------- | ---- |
 | `LAT` (`LV`) | — | `grid_1000m`, IDs as delivered, e.g. `"1kmX507Y312"` | by coordinate |
 | `LTU` (`LT`) | — | `grid_1000m`, INSPIRE IDs, e.g. `"1kmN3721E5144"` | by coordinate |
-| `EST` (`EE`) | `grid_1000m`, `admin_level_2` | `grid_1000m`, numeric Maps API IDs | by coordinate |
+| `EST` (`EE`) | `grid_1000m`, `admin_level_2` | `grid_1000m`, INSPIRE IDs, e.g. `"1kmN4125E5151"` | by coordinate |
 | `NOR` (`NO`) | — | `admin_level_4` (grunnkrets), `admin_level_2` (kommune), numeric IDs | by coordinate |
 
 Any other combination returns `400` with the supported values.
@@ -628,7 +628,7 @@ curl -sG "https://dev.data.api.telcofy.ai/data-agg" \
   --data-urlencode "measure=sum_unique_people" \
   --data-urlencode "activity_type=hourly" \
   --data-urlencode "geo_type=grid_1000m" \
-  --data-urlencode "geo_ids=39991" \
+  --data-urlencode "geo_ids=1kmN4124E5153" \
   --data-urlencode "start_time=2025-10-14T08:00:00Z" \
   --data-urlencode "end_time=2025-10-14T09:00:00Z" | jq '.results[0]'
 ```
@@ -664,7 +664,7 @@ curl -s -X POST https://dev.data.api.telcofy.ai/data-agg \
         "activity_type": "hourly",
         "country_code": "EST",
         "geo_type": "grid_1000m",
-        "geo_ids": [39991],
+        "geo_ids": ["1kmN4124E5153"],
         "full": false
       }'
 ```
@@ -704,7 +704,7 @@ curl -s -X GET https://dev.data.api.telcofy.ai/data-agg/results/12bd1616-002b-43
 Example response (`full=false` — inline preview):
 
 ```json
-{"job_id":"12bd1616-002b-43c5-bc0c-422a2110c481","status":"completed","country_code":"EST","preview":[{"sum_unique_people":16016,"time_bucket":"2025-10-14 08:00:00","geo_id":39991,"geo_name":"1kmN4124E5153","type":"hourly"}]}
+{"job_id":"12bd1616-002b-43c5-bc0c-422a2110c481","status":"completed","country_code":"EST","preview":[{"sum_unique_people":16016,"time_bucket":"2025-10-14 08:00:00","geo_id":"1kmN4124E5153","geo_name":"1kmN4124E5153","type":"hourly"}]}
 ```
 
 When `full=true`, the results response returns a Cloud Storage path instead of an inline preview:
@@ -724,7 +724,7 @@ which dates are available.
 | Parameter | Supported values for `EST` |
 | --------- | -------------------------- |
 | `geo_type` | `grid_1000m` (INSPIRE 1 km cells) or `admin_level_2` (municipalities). `admin_level_4` is not available for Estonia. |
-| `geo_ids` | Numeric IDs as returned by the Maps API: `grid_1000m` cell IDs, or EHAK municipality codes for `admin_level_2` (for example `784` = Tallinn). |
+| `geo_ids` | Strings as returned by the Maps API: INSPIRE cell IDs for `grid_1000m` (for example `1kmN4125E5151`), or EHAK municipality codes for `admin_level_2` (for example `"784"` = Tallinn). Other formats, numeric `grid_1000m` IDs included, return `400`. |
 | `activity_type` | `hourly` or `daily` |
 | `measure` | `grid_1000m`: `sum_unique_people`, `stays_count`, `stays_dwell_minutes` or `stays_devices`; with `activity_type=daily` also `sum_people_home`, `sum_people_work` or `sum_people_visitors` (below). `admin_level_2`: `sum_unique_people` only. |
 
@@ -738,7 +738,7 @@ returned as zero.
 `admin_level_2` returns full municipality totals: each person is counted once per
 municipality and bucket. Do not add up `grid_1000m` cells to get a municipality figure:
 someone seen in several cells would be counted several times, and cells below 5 people are
-missing. Example daily row: `{"sum_unique_people":539446,"time_bucket":"2025-10-14","geo_id":784,"geo_name":"Tallinn","type":"daily"}`.
+missing. Example daily row: `{"sum_unique_people":539446,"time_bucket":"2025-10-14","geo_id":"784","geo_name":"Tallinn","type":"daily"}`.
 An hour is withheld (missing from the results) when publishing it would reveal fewer than
 5 people.
 
@@ -754,7 +754,7 @@ cell on a day by whose place it is:
 When all three are published they add up to `sum_unique_people`. A group of 1 to 4 people is not published and
 comes back as `null`, never as zero (a `0` means no one). They are not available hourly, for
 `admin_level_2` or for other countries; those requests return `400`. Example daily row:
-`{"sum_people_home":4629,"time_bucket":"2025-10-14","geo_id":40176,"geo_name":"1kmN4125E5151","type":"daily"}`.
+`{"sum_people_home":4629,"time_bucket":"2025-10-14","geo_id":"1kmN4125E5151","geo_name":"1kmN4125E5151","type":"daily"}`.
 
 The GET preview accepts the same Estonian parameters, plus `country_code=EST`:
 
@@ -823,8 +823,8 @@ Example response:
 
 This Norwegian request returns Oslo → Bærum for 2026-09-09: `"trips": 92072`.
 
-Estonia (`country_code: "EST"`) requires `grid_1000m` on both sides. `geo_ids` are the
-numeric `grid_1000m` IDs and can be passed as numbers or numeric strings:
+Estonia (`country_code: "EST"`) requires `grid_1000m` on both sides. `geo_ids` are INSPIRE
+`grid_1000m` cell IDs as strings (for example `"1kmN4125E5151"`); numeric IDs return `400`:
 
 ```python
 import requests
@@ -840,9 +840,9 @@ requests.request(
         "end_time": "2025-10-15T00:00:00Z",
         "activity_type": "daily",
         "origin_geo_type": "grid_1000m",
-        "origin_geo_ids": [39799],
+        "origin_geo_ids": ["1kmN4123E5153"],
         "destination_geo_type": "grid_1000m",
-        "destination_geo_ids": [39991],
+        "destination_geo_ids": ["1kmN4124E5153"],
         "full": False,
         "country_code": "EST"
     },
@@ -871,8 +871,8 @@ entry per origin/destination pair per bucket:
     {
       "batch_date": "2025-10-14",
       "time_bucket": "2025-10-14",
-      "origin_geo_id": 39799,
-      "destination_geo_id": 39991,
+      "origin_geo_id": "1kmN4123E5153",
+      "destination_geo_id": "1kmN4124E5153",
       "trips": 3319,
       "General_Distance": 1000,
       "Average_Speed": 42.09
@@ -885,7 +885,7 @@ entry per origin/destination pair per bucket:
 | ----- | ---- | ----------- |
 | `batch_date` | string | Date the aggregated row covers. |
 | `time_bucket` | string | UTC bucket: `YYYY-MM-DD HH:MM:SS` for `hourly`, `YYYY-MM-DD` for `daily`. |
-| `origin_geo_id` / `destination_geo_id` | number or string | IDs of the origin/destination geography, matching `origin_geo_type`/`destination_geo_type`: numbers for `EST` and `NOR`, strings for `LAT` and `LTU`. |
+| `origin_geo_id` / `destination_geo_id` | number or string | IDs of the origin/destination geography, matching `origin_geo_type`/`destination_geo_type`: numbers for `NOR`, strings (INSPIRE IDs) for `EST`, `LAT` and `LTU`. |
 | `General_Distance` *(optional)* | number | Straight-line distance between origin and destination, in meters. |
 | `Average_Speed` *(optional)* | number | Average travel speed for the trip, in km/h. |
 | `trips` | number | Estimated trip count for the origin/destination pair. |
