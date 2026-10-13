@@ -375,7 +375,19 @@ Example response:
 }
 ```
 
-**Fetch the latest realtime headcount rows** for all monitored maps:
+**Fetch realtime headcount rows** for your monitored maps, newest first:
+
+| Query parameter | Description |
+| --------------- | ----------- |
+| `datetime_from` | ISO 8601 start (inclusive). Default: the whole history. |
+| `datetime_to` | ISO 8601 end (inclusive). Default: now. |
+| `target_id` | Only this monitored map (the `target_id` of a row). |
+| `limit` | Maximum rows to return. Default `1000`, maximum `10000`. |
+| `offset` | Rows to skip, for paging. Default `0`. |
+
+Without `datetime_from` and `limit` you only get the newest rows, up to `limit`.
+Page back in time with `datetime_to`, or narrow with `target_id`. Invalid dates
+return `400`.
 
 ```bash
 curl -s "https://data.api.telcofy.ai/admin/realtime/data" \
@@ -405,6 +417,61 @@ Example response:
 | `target_name` | string | Human-readable name of the admin map. |
 | `result` | string | Processing status (`SUCCESS` or error code). |
 | `subscriber_count` | integer | Estimated headcount at measurement time. |
+
+The response also contains `count`, the number of rows returned.
+
+Example with filters, one map over one day:
+
+```bash
+curl -s "https://data.api.telcofy.ai/admin/realtime/data?target_id=snS123456sDQnAwk&datetime_from=2026-04-20T00:00:00Z&datetime_to=2026-04-21T00:00:00Z&limit=1000" \
+  -H "x-api-key: $API_KEY"
+```
+
+**Fetch the by-country breakdown** with `GET /admin/realtime/data/country`. It takes
+the same query parameters and returns `{ "rows": [...], "count": n }`, with the
+visitor country on each row. It returns `403` unless the country view is enabled
+for your account.
+
+```bash
+curl -s "https://data.api.telcofy.ai/admin/realtime/data/country?target_id=snS123456sDQnAwk&limit=100" \
+  -H "x-api-key: $API_KEY"
+```
+
+**Fetch the night baseline** with `GET /realtime/baseline`. For each map it returns
+the median headcount over the quiet hours (02:00-04:59, Europe/Oslo time).
+
+| Query parameter | Description |
+| --------------- | ----------- |
+| `target_id` | Only this monitored map. Default: all your maps. |
+| `from` | First night to include, `YYYY-MM-DD`. Default: first available night. |
+| `to` | Last night to include, `YYYY-MM-DD`. Default: last available night. |
+
+```bash
+curl -s "https://data.api.telcofy.ai/realtime/baseline?target_id=snS123456sDQnAwk&from=2026-04-01&to=2026-04-20" \
+  -H "x-api-key: $API_KEY"
+```
+
+Example response:
+
+```json
+{
+  "baselines": [
+    {
+      "target_id": "snS123456sDQnAwk",
+      "target_name": "my_area1",
+      "night_floor": 112,
+      "quiet_samples": 420,
+      "nights_used": 20,
+      "available_nights": ["2026-04-01", "2026-04-02"],
+      "range_from": "2026-04-01",
+      "range_to": "2026-04-20"
+    }
+  ]
+}
+```
+
+`night_floor` is `null` when fewer than 12 quiet-hour samples fall in the range.
+`available_nights` lists every night with data (shortened above).
 
 ### Data Aggregation API (`/data-agg`)
 

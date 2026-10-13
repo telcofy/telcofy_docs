@@ -36,7 +36,9 @@ See `authentication.md` for header requirements and token exchange details.
 | GET | `/data-agg/jobs` | List historical aggregation jobs for the caller. | `x-api-key` |
 | GET | `/data-availability` | List delivered daily batches per dataset (optional `country`, `dataset`, `start_time`, `end_time`). Dev environment only. See [Data Delivery Guide](data-delivery.md#data-availability-api-data-availability). | `x-api-key` |
 | POST | `/admin/realtime` | Enable or disable realtime monitoring for a saved map. | `x-api-key` |
-| GET | `/admin/realtime/data` | Fetch the latest realtime headcount rows for all monitored maps. | `x-api-key` |
+| GET | `/admin/realtime/data` | Realtime headcount rows for monitored maps, newest first (filters: `datetime_from`, `datetime_to`, `target_id`, `limit`, `offset`). See [Realtime Admin API](data-delivery.md#realtime-admin-api-adminrealtime). | `x-api-key` |
+| GET | `/admin/realtime/data/country` | Realtime headcount rows with a by-country breakdown (same filters). Requires the country view on your account. | `x-api-key` |
+| GET | `/realtime/baseline` | Night-time baseline (median of 02:00-04:59 samples) per monitored map. | `x-api-key` |
 
 ---
 
