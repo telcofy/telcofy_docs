@@ -1,7 +1,8 @@
 # Telcofy Authentication Guide
 
-External customers authenticate to Telcofy services with **machine-account API keys**
-issued by the Telcofy team. Two base URLs are available:
+External customers authenticate to Telcofy services with **machine-account API keys**.
+In an organisation, editors create and rotate the keys in the app (**Developer › API Keys**);
+see [Organisation keys](#organisation-keys). Two base URLs are available:
 
 - Users API: `https://users.api.telcofy.ai`
 - Data API: `https://data.api.telcofy.ai`
@@ -22,18 +23,38 @@ accounts scoped to the customer’s data.
 - The `service` profile you choose while creating a machine account controls which Google
   scopes can be minted later (`storage` is the default; use `bigquery` for BigQuery access).
 - Machine accounts are scoped to read artifacts under `gs://telcofy-user-data/results/{USER_ID}/`.
-- Rotation is supported through the Users API. If you do not have the ability to call the
-  rotation endpoints directly, contact Telcofy support to request a new key.
+- Rotation is supported in the app (**Developer › API Keys**) and through the Users API. If
+  you cannot do either, contact Telcofy support to request a new key.
 
 | Endpoint | Description | Notes |
 | --- | --- | --- |
 | `GET /users/:uid/machine-accounts/list` | View existing machine-account labels and rotation timestamps. | Available to customers with machine-account admin access; otherwise, contact Telcofy support to retrieve this information. |
-| `POST /users/:uid/machine-accounts` | Create or rotate a machine-account API key. | Provide `keyLabel` and optional `service` (`storage` default, `bigquery` for BigQuery access). Telcofy support can run this on your behalf if self-service is not enabled. |
+| `POST /users/:uid/machine-accounts` | Create or rotate a machine-account API key. | Provide `keyLabel` and optional `service` (`storage` default, `bigquery` for BigQuery access). In an organisation only editors can do this. |
 | `POST /login-with-apikey` | Exchange an API key for a 1-hour Google OAuth access token. | Supports optional `{"service":"bigquery"}` to request the BigQuery scope; defaults to a Cloud Storage read-only scope. |
 
 > **Note:** Calling `POST /users/:uid/machine-accounts` with an existing `keyLabel`
-> rotates the key (the previous key is revoked immediately). If you do not have self-service
-> access, submit a ticket with the desired `keyLabel` and `service`.
+> rotates the key (the previous key is revoked immediately). If you cannot create or rotate
+> keys yourself, submit a ticket with the desired `keyLabel` and `service`.
+
+### Organisation keys
+
+If your account belongs to an organisation (for example a municipality), its API keys belong
+to the organisation, not to the person who created them.
+
+- **Who manages them:** any member sees the organisation's keys on **Developer › API Keys**
+  (with the name of the member who created each). Only **editors** can create, rotate or
+  delete a key. A viewer gets `403 editor_role_required`.
+- **What a key can do:** a key acts for the organisation with editor rights, whatever the
+  role of the person who created it. It can create and edit areas, switch realtime monitoring
+  on or off, and read the organisation's realtime data. Areas created with a key belong to
+  the organisation and are shared with all members.
+- **When the creator leaves:** the key keeps working. Removing a member from the organisation
+  does not revoke the keys they created; an editor rotates or deletes a key explicitly.
+- **What `userId` means:** the `userId` returned by `POST /login-with-apikey` identifies the
+  account that created the key, not the organisation. It is stable for the life of the key
+  and is the `{USER_ID}` in your Cloud Storage results path.
+- **Existing keys:** keys created before your account joined an organisation keep working
+  unchanged and become organisation keys when the organisation is switched over.
 
 
 ---
@@ -51,7 +72,8 @@ Keep in mind:
 - The default scope is `https://www.googleapis.com/auth/devstorage.read_only`; include
   `{"service":"bigquery"}` in the request body when you need BigQuery access.
 - The response echoes your `userId`; reuse it when downloading Cloud Storage exports or
-  labelling results.
+  labelling results. For an organisation key it is the id of the account that created the
+  key (see [Organisation keys](#organisation-keys)).
 
 ---
 
@@ -66,6 +88,7 @@ For admin map management, realtime monitoring, and aggregation examples, see
 
 - Treat API keys as secrets—do not embed them in mobile apps, client-side code, or public repositories.
 - Rotate keys periodically (quarterly recommended) and immediately when staff change roles.
+  Removing someone from your organisation does not revoke the keys they created.
 - Restrict Cloud Storage downloads to secured environments; OAuth tokens inherit read-only access to your results folder.
 - If an API key is suspected to be compromised, request an immediate rotation from Telcofy support.
 - Audit usage via `/users/:uid/machine-accounts/list` or Telcofy-provided dashboards when available.
