@@ -565,19 +565,27 @@ Example response:
 `results` continues with one row per hour (and per `direction`) up to `end_time`, all
 sharing the same nearest `link_id`.
 
-For Estonia (`EST`) and Norway (`NOR`), the coordinate snaps to the nearest road that has
-flow data in the requested window, so `distance_m` can be larger than the nearest street. If
-no road has flow data in the window, `results` holds a single row for the nearest way with
+For Norway (`NOR`), the coordinate snaps to the nearest road that has flow data in the
+requested window, so `distance_m` can be larger than the nearest street.
+
+For Latvia (`LAT`), Lithuania (`LTU`) and Estonia (`EST`), the coordinate snaps to the
+nearest road of type `motorway`, `trunk`, `primary`, `secondary` or `tertiary` (including their `_link` ramps).
+Footways, paths, tracks, service roads and residential streets are not matched, so a
+coordinate on a minor street resolves to a nearby larger road and `distance_m` can be
+several hundred metres. Check `link_name` and `distance_m` to see which road was used. Flow
+for residential and minor streets is not available.
+
+If the selected road has no flow data in the window, `results` holds a single row for it with
 `time_bucket`, `direction` and `people` set to `null`, so you can tell an empty window from a
 failed lookup:
 
 ```json
-{"link_id":4853860,"link_name":"Vana-Posti","link_type":"pedestrian","distance_m":5,"time_bucket":null,"direction":null,"people":null}
+{"link_id":4853860,"link_name":"Vana-Posti","link_type":"tertiary","distance_m":5,"time_bucket":null,"direction":null,"people":null}
 ```
 
 **Hourly vs daily (Estonia).** Flow is hourly by default. In Estonia an hour with fewer than 5
-people on a road is not published, so a quiet road (about a quarter of roads with traffic) has
-no hourly rows, and the hourly lookup snaps past it to a busier road. Add
+people on a road is not published. A quiet road (about a quarter of roads with traffic) has
+no hourly rows, and the hourly lookup returns the empty row above for it. Add
 `activity_type=daily` to read the daily flow instead: it snaps to the nearest road with any
 daily figure in the window, so a quiet residential street returns its own count. `daily` is
 available for `EST` only; other countries return `400`.
