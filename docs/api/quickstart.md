@@ -11,7 +11,10 @@ To obtain Telcofy API access you need a valid contract; contact sales at tom@tel
 
 ## 1. Gather Prerequisites
 
-- Telcofy-issued **API key** (the login response echoes back your `userId` if you do not have it handy).
+- A Telcofy **API key**. In an organisation, an editor creates it in the app under
+  **Developer › API Keys** (viewers cannot); see
+  [Organisation keys](authentication.md#organisation-keys). The login response echoes back
+  your `userId` if you do not have it handy.
 - `curl` and `jq` for command-line examples.
 - `gsutil` if you prefer to copy Cloud Storage results via the CLI.
 
