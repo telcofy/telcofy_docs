@@ -573,7 +573,10 @@ nearest road of type `motorway`, `trunk`, `primary`, `secondary` or `tertiary` (
 Footways, paths, tracks, service roads and residential streets are not matched, so a
 coordinate on a minor street resolves to a nearby larger road and `distance_m` can be
 several hundred metres. Check `link_name` and `distance_m` to see which road was used. Flow
-for residential and minor streets is not available.
+for residential and minor streets is available by request via
+[Cloud Storage Export](#1-download-cloud-storage-exports) or
+[Shared BigQuery Dataset](#2-query-shared-bigquery-datasets). Contact support@telcofy.ai for
+more information.
 
 If the selected road has no flow data in the window, `results` holds a single row for it with
 `time_bucket`, `direction` and `people` set to `null`, so you can tell an empty window from a
