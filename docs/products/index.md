@@ -11,7 +11,7 @@ Telcofy packages MultiMNO-derived analytics into commercial offerings designed f
 
 - **What it measures** — Sustained device presence based on staypoint detection (e.g. devices dwelling longer than 10 minutes).
 - **Use cases** — Urban planning, retail footfall benchmarking, commercial real-estate evaluation, event and venue analysis.
-- **Delivery** — Hourly and daily tables per admin area and grid cell: unique people, arrivals, average travel distance, travel time and visit length, arrivals by mode (car, walk, bike, transit), and stays and dwell minutes on the grid. Activity distributions add people and arrivals by band (for example by travel distance).
+- **Delivery** — Hourly and daily tables per admin area and grid cell: unique people, arrivals, average travel distance, travel time and visit length, arrivals by mode (car, walk, bike, transit), and stays and dwell minutes on the grid. Activity distributions add people and arrivals by band: the municipality visitors came from, travel distance, travel time, visit length and trip purpose, per traveller role.
 
 ## ODM: Origin–Destination Matrix
 

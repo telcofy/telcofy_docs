@@ -531,7 +531,8 @@ Each country has its own admin levels:
   ISO timestamp (`2026-10-20T00:00:00.000Z`), `batch_date` its UTC date, and `day_type` the
   kind of day (for example `weekday` or `saturday`).
 - **Key columns** always come back: `batch_date`, `day_type`, `time_bucket`, the geo IDs,
-  `geo_type`, names (`geo_name`) and `k5_tier`.
+  `geo_type`, names (`geo_name`) and `k5_tier`. Activity distributions return only the keys
+  that vary (see [Activity distributions](#activity-distributions)).
 - **`measure` is optional.** Name one or more of the table's measure columns (a comma list on
   GET, an array or comma list on POST) to get only those; leave it out to get every measure.
 - **k = 5 privacy threshold in every country.** A figure that would describe fewer than 5
@@ -699,30 +700,88 @@ Each area is counted on its own: someone seen in several grid cells counts once 
 cells below the privacy threshold are withheld. Do not add up grid cells to get an admin area
 figure; ask for the admin geo type instead.
 
-**3. Activity distributions preview**
+##### 3. Activity distributions preview {#activity-distributions}
 
 `agg_type=activity_distributions` takes the same geo types, IDs and window as `activities`
-and splits `people` and `arrivals` into bands (for example by travel distance). Each row is one
-band of one measure for one area and bucket:
+and splits `people` and `arrivals` into bands. Each row is one band of one distribution, for
+one traveller role, area and bucket. There are five distributions:
 
-| Field | Description |
-| ----- | ----------- |
-| `role`, `measure` | What the distribution describes (for example `measure` distance). |
-| `band`, `band_name` | The band, and its label (for example `0-1 km`). |
-| `band_min`, `band_max`, `unit` | The band's bounds and their unit. |
+| Distribution | Bands |
+| ------------ | ----- |
+| `origin_lau` | The municipality the arrivals came from: `band` is its ID (`EE_2_0784`), `band_name` its name (`Tallinn`). |
+| `distance` | Travel distance: `0-1 km`, `1-2 km`, `2-5 km`, `5-10 km`, `10-25 km`, `25-50 km`, `50-100 km`, `100+ km`. |
+| `travel_time` | Travel time: `0-10 min`, `10-20 min`, `20-30 min`, `30-45 min`, `45-60 min`, `60-90 min`, `90+ min`. |
+| `visit_length` | Time spent in the area: `0-30 min`, `30-60 min`, `60-120 min`, `120-180 min`, `180-300 min`, `300-480 min`, `480-960 min`, `960+ min`. |
+| `purpose` | Trip purpose: `home`, `work`, `education`, `business`, `shopping`, `leisure`, `errands`. |
+
+Two optional parameters narrow the rows, each a comma list on GET or an array or comma list on
+POST; left out, every value is returned:
+
+| Parameter | Values |
+| --------- | ------ |
+| `distribution` | One or more of `origin_lau`, `distance`, `travel_time`, `visit_length`, `purpose`. |
+| `role` | One or more traveller roles: `home`, `work`, `school`, `elsewhere`. |
+
+A distribution row carries only the columns that vary. `geo_type` and `k5_tier` are not
+returned, since they repeat the request:
+
+| Field | Returned |
+| ----- | -------- |
+| `batch_date`, `day_type`, `time_bucket`, `geo_id` | Always. |
+| `geo_name` | Admin geo types; grid cells have no name. |
+| `role` | Unless `role` names exactly one role. |
+| `measure` | The distribution. Unless `distribution` names exactly one. |
+| `band` | Always. |
+| `band_name` | With `origin_lau`; for the other distributions it equals `band`. |
+| `band_min`, `band_max`, `unit` | With `distance`, `travel_time` or `visit_length` (`unit` `km` or `min`). |
 | `people`, `arrivals` | People and arrivals in the band. Use the `measure` parameter to pick one. |
 
+`distribution` and `role` are on the production API (`https://data.api.telcofy.ai`). Dev
+returns every distribution with the full column set.
+
+**Where do visitors come from?** Ask for `origin_lau` on the area. For example, for six 250 m
+grid cells in Ülemiste City, Tallinn:
+
 ```bash
-curl -sG "https://dev.data.api.telcofy.ai/data-agg" \
+curl -s -X POST https://data.api.telcofy.ai/data-agg \
   -H "x-api-key: $API_KEY" \
-  --data-urlencode "agg_type=activity_distributions" \
-  --data-urlencode "country_code=NOR" \
-  --data-urlencode "activity_type=daily" \
-  --data-urlencode "geo_type=admin_lvl_2" \
-  --data-urlencode "geo_ids=NO_2_0301" \
-  --data-urlencode "start_time=2026-10-20T00:00:00Z" \
-  --data-urlencode "end_time=2026-10-21T00:00:00Z" | jq
+  -H "Content-Type: application/json" \
+  -d '{
+        "agg_type": "activity_distributions",
+        "country_code": "EST",
+        "activity_type": "daily",
+        "geo_type": "grid_250m",
+        "geo_ids": ["250mN16491E20623", "250mN16491E20624", "250mN16491E20625",
+                    "250mN16492E20623", "250mN16492E20624", "250mN16492E20625"],
+        "distribution": "origin_lau",
+        "start_time": "2025-10-14T00:00:00Z",
+        "end_time": "2025-10-15T00:00:00Z"
+      }' | jq
 ```
+
+Preview rows from the [results endpoint](#activities):
+
+```json
+{
+  "preview": [
+    {
+      "batch_date": "2025-10-14",
+      "day_type": "weekday",
+      "time_bucket": "2025-10-14T00:00:00.000Z",
+      "geo_id": "250mN16491E20623",
+      "role": "work",
+      "band": "EE_2_0653",
+      "band_name": "Rae vald",
+      "people": 36,
+      "arrivals": 37
+    }
+  ]
+}
+```
+
+Add `"role": "work"` for commuters only. To rank origins for the whole area, sum `arrivals`
+by `band` over the cells and roles. Arrivals add up across cells. `people` does not, because
+someone seen in two cells counts once in each.
 
 #### Asynchronous data aggregation endpoint (POST `/data-agg`)
 
@@ -742,6 +801,7 @@ the shape of the `preview` rows change.
 | `activity_type` | `hourly` or `daily`. Required for `activities`, `activity_distributions` and `odm`; flow defaults to `hourly`. |
 | `measure` | Optional array (or comma list) of measure columns. Left out, every measure is returned. |
 | `geo_type`, `geo_ids` | Activities and distributions: the geo type and optional IDs. |
+| `distribution`, `role` | Distributions only, optional: the distributions and traveller roles to return (see [Activity distributions](#activity-distributions)). |
 | `origin_geo_type`, `origin_geo_ids`, `destination_geo_type`, `destination_geo_ids` | ODM: see [below](#origindestination-matrix-odm). |
 | `lat`, `lon` | Flow: the point to look up. |
 | `full` | Optional `true`: export every row to Cloud Storage (the job record is kept 7 days). Otherwise the preview is 100 rows and the job record expires after about 24 hours. |
