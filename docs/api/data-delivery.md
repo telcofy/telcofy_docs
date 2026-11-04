@@ -477,56 +477,112 @@ Example response:
 
 > **Note:** The `/data-agg` endpoint is only available in the **Telcofy Dev environment** (`https://dev.data.api.telcofy.ai`). It requires a separate Dev API key. Contact [support@telcofy.ai](mailto:support@telcofy.ai) to get access to Telcofy Dev and test features under development.
 
-Use `/data-agg` to request Telcofy’s analytical products (Activities, Origin-Destination
-Matrix and Flow). Start with synchronous previews or submit asynchronous jobs that export
-detailed results to Cloud Storage.
+Use `/data-agg` to request Telcofy's analytical products: Activities, Activity
+distributions, Origin-Destination Matrix (ODM) and Flow. Start with synchronous previews or
+submit asynchronous jobs that export detailed results to Cloud Storage.
 
-`/data-agg` serves only data that has been delivered for a country, so everything it returns
-is listed by [`/data-availability`](#data-availability-api-data-availability). Check there
-which dates exist before you query. `country_code` defaults to `NOR`.
+`/data-agg` serves **Telcofy data catalogue 1.0**: the tables, columns and values of the
+catalogue, returned as they are. Everything it returns is listed by
+[`/data-availability`](#data-availability-api-data-availability), so check there which dates
+exist before you query. `country_code` is `NOR`, `EST`, `LAT` or `LTU` (`NO`, `EE`, `LV`
+and `LT` are accepted too) and defaults to `NOR`.
 
-| `country_code` | Activities | ODM `origin_geo_type` / `destination_geo_type` | Flow |
-| -------------- | ---------- | ---------------------------------------------- | ---- |
-| `LAT` (`LV`) | — | `grid_1000m`, IDs as delivered, e.g. `"1kmX507Y312"` | by coordinate |
-| `LTU` (`LT`) | — | `grid_1000m`, INSPIRE IDs, e.g. `"1kmN3721E5144"` | by coordinate |
-| `EST` (`EE`) | `grid_1000m`, `admin_level_2` | `grid_1000m`, INSPIRE IDs, e.g. `"1kmN4125E5151"` | by coordinate |
-| `NOR` (`NO`) | — | `admin_level_4` (grunnkrets), `admin_level_2` (kommune), numeric IDs | by coordinate |
+> **Breaking change (November 2026):** catalogue 1.0 replaces the earlier `/data-agg`
+> schema, with no mapping back to it. Geo types `admin_level_2` / `admin_level_4`, numeric
+> Norwegian IDs, EHAK codes, the `type` column and the measures `stays_devices`,
+> `sum_people_home`, `sum_people_work`, `sum_people_visitors` and `trips_car` (and the other
+> unsuffixed modes, now `*_modelled`) are gone and return `400`. Jobs created before the
+> switch can no longer be previewed. See [Migrating from the earlier schema](#migrating-from-the-earlier-schema).
 
-Any other combination returns `400` with the supported values.
+#### Geo types and IDs
 
-> **Modelled data:** the Estonian and Norwegian data come from an activity-based travel
-> model of all residents, calibrated to national travel and labour statistics, not from mobile
-> network measurements. Norwegian flows cover residents' cars only.
->
-> **Estonia adds a long-distance layer:** trips of 50 km or more come from mobile phone data
-> and are added to the modelled trips. This layer is part of Estonian **flows** (the `people`
-> counts on intercity roads), but not of the Estonian **ODM** that `/data-agg` serves today:
-> the layer's trips are published for municipality pairs, which `/data-agg` doesn't offer yet,
-> so 1 km ODM rows are modelled trips only. Estonian activities are fully modelled.
+Each request reads one catalogue table, chosen from `agg_type`, the geo type and
+`activity_type` (`hourly` or `daily`):
 
-#### Synchronous data preview endpoint (GET `/data-agg` )
+| `agg_type` | Admin geo types | Grid geo types | Product |
+| ---------- | --------------- | -------------- | ------- |
+| `activities` | `country`, `admin_lvl_1` … `admin_lvl_4` | `grid_250m`, `grid_500m`, `grid_1000m`, `grid_5000m`, `grid_10000m` | Activities |
+| `activity_distributions` | as `activities` | as `activities` | Activities |
+| `odm` | as `activities`, plus `station` in LAT and LTU | as `activities` | ODM |
+| `flow` | — (by coordinate, on the nearest road link) | — | Flow |
 
-Usage: quick preview of the data. Returns a maximum of one day of data. Not designed
-for querying historical data. GET supports `agg_type` `activities` and `flow`; request ODM
-with [POST `/data-agg`](#origindestination-matrix-odm).
+Each country has its own admin levels:
 
-**1. Flow data preview**:
+| `country_code` | Admin geo types | Grid cell IDs |
+| -------------- | --------------- | ------------- |
+| `NOR` (`NO`) | `country`, `admin_lvl_1` (fylke), `admin_lvl_2` (kommune), `admin_lvl_3` (delområde), `admin_lvl_4` (grunnkrets) | SSB squares, 14 digits (`22622506649500`) |
+| `EST` (`EE`) | `country`, `admin_lvl_1` (maakond), `admin_lvl_2` (omavalitsus), `admin_lvl_3` (asustusüksus) | INSPIRE (`1kmN4111E5311`) |
+| `LAT` (`LV`) | `country`, `admin_lvl_1` (novads), `station` (border crossings, ODM only) | INSPIRE |
+| `LTU` (`LT`) | `country`, `admin_lvl_2` (savivaldybė), `station` (border crossings, ODM only) | INSPIRE |
 
-Example `flow` query — given a coordinate, resolves the nearest road link and returns its
-flow counts over the requested datetime range. Flow is available for every country in the
-table above (`LAT`/`LTU`/`EST`/`NOR`, also `LV`/`LT`/`EE`/`NO`). `end_time` is optional and
-defaults to the current datetime when omitted. The legacy
-`datetime_from`/`datetime_to` parameters are still accepted as aliases but are deprecated:
+- **IDs are strings with a country prefix:** `NO_2_0301` (Oslo kommune), `NO_4_03010101`,
+  `EE_3_1089`, `LV_1_0001000` (Rīga), `LT_2_11` (Vilnius); `NO`, `EE`, `LV` or `LT` for
+  `country`; border crossings are numbers as text (`"900001"`). Grid cells are SSB squares in
+  Norway and INSPIRE IDs led by the cell size elsewhere (`250mN16479E20753`, `1kmN4111E5311`,
+  `10kmN411E531`). An ID that doesn't match its geo type and country returns `400`.
+- `geo_ids` (and `origin_geo_ids` / `destination_geo_ids` for ODM) may be left out to get
+  every area of the geo type.
+- Any other geo type for a country returns `400` with the supported values.
 
+#### Rows, measures and privacy
+
+- **Window.** `start_time` and `end_time` (ISO 8601, required) select every row whose
+  bucket overlaps `[start_time, end_time)`. `time_bucket` is the start of the bucket as an
+  ISO timestamp (`2026-10-20T00:00:00.000Z`), `batch_date` its UTC date, and `day_type` the
+  kind of day (for example `weekday` or `saturday`).
+- **Key columns** always come back: `batch_date`, `day_type`, `time_bucket`, the geo IDs,
+  `geo_type`, names (`geo_name`) and `k5_tier`.
+- **`measure` is optional.** Name one or more of the table's measure columns (a comma list on
+  GET, an array or comma list on POST) to get only those; leave it out to get every measure.
+- **k = 5 privacy threshold in every country.** A figure that would describe fewer than 5
+  people is not published. `k5_tier` says how a row was published: `total`, a cell size such
+  as `1km`, `hour` (flow), or `suppressed`. A `null` measure means withheld or not available
+  for that row, never zero. When you ask for every area (no `geo_ids`), rows with `geo_id`
+  `suppressed` hold what was withheld from the finer areas.
+- **Previews** return at most 100 rows with `"truncated": true` when there are more. Use an
+  asynchronous job with `full=true` to export every row.
+
+> **Modelled data:** activities, ODM and flow build on Telcofy's activity-based travel model
+> of all residents. Columns ending in `_modelled` come from the model; `share_telco`,
+> `share_counter`, `vehicles_telco` and `vehicles_counter` show how much of a figure is backed
+> by mobile network or traffic counter data.
+
+#### Synchronous data preview endpoint (GET `/data-agg`)
+
+Usage: quick preview of the data, at most 100 rows. GET supports `agg_type` `activities`,
+`activity_distributions` and `flow`; request ODM with
+[POST `/data-agg`](#origindestination-matrix-odm).
+
+**1. Flow data preview**
+
+Given a coordinate, `flow` returns the traffic on the nearest road link that has flow data in
+the requested window. Flow is available hourly (default) and daily in every country.
+
+| Parameter | Description |
+| --------- | ----------- |
+| `lat`, `lon` | The point to look up (required). |
+| `start_time` | ISO 8601 start (required). |
+| `end_time` | ISO 8601 end. Default: now. |
+| `activity_type` | `hourly` (default) or `daily`. |
+| `measure` | Optional flow columns (below). |
+
+The road links within 300 m of the point are looked up, nearest first, and the response holds
+the rows of the nearest one with data in the window, in both directions, each with
+`distance_m` (metres from the point to the link). Many nearby links (footpaths, side roads)
+carry no flow, so `distance_m` can be larger than the distance to the nearest street: check
+`link_name` and `distance_m` to see which road was used. With no road with traffic within
+300 m, `results` is empty.
 
 ```bash
 curl -sG "https://dev.data.api.telcofy.ai/data-agg" \
   -H "x-api-key: $API_KEY" \
   --data-urlencode "agg_type=flow" \
-  --data-urlencode "country_code=LAT" \
-  --data-urlencode "lat=56.628547" \
-  --data-urlencode "lon=23.755313" \
-  --data-urlencode "start_time=2026-07-15T10:00:00Z" | jq
+  --data-urlencode "country_code=EST" \
+  --data-urlencode "lat=59.437" \
+  --data-urlencode "lon=24.7536" \
+  --data-urlencode "measure=people" \
+  --data-urlencode "start_time=2025-10-14T07:00:00Z" \
+  --data-urlencode "end_time=2025-10-14T09:00:00Z" | jq
 ```
 
 Example response:
@@ -534,130 +590,161 @@ Example response:
 ```json
 {
   "agg_type": "flow",
-  "country_code": "LAT",
-  "lat": 56.628547,
-  "lon": 23.755313,
-  "start_time": "2026-07-15T10:00:00.000Z",
-  "end_time": "2026-07-21T12:57:41.505Z",
+  "activity_type": "hourly",
+  "country_code": "EST",
+  "lat": 59.437,
+  "lon": 24.7536,
+  "start_time": "2025-10-14T07:00:00.000Z",
+  "end_time": "2025-10-14T09:00:00.000Z",
   "results": [
     {
-      "link_id": 431208917,
-      "link_name": "Miera iela",
-      "link_type": "primary",
-      "distance_m": 12,
-      "time_bucket": "2026-07-15T10:00:00.000Z",
-      "direction": -1,
-      "people": 39
-    },
-    {
-      "link_id": 431208917,
-      "link_name": "Miera iela",
-      "link_type": "primary",
-      "distance_m": 12,
-      "time_bucket": "2026-07-15T10:00:00.000Z",
+      "batch_date": "2025-10-14",
+      "day_type": "weekday",
+      "time_bucket": "2025-10-14T07:00:00.000Z",
+      "period": "MD",
+      "link_id": 501150631,
+      "link_name": "Viru väljak",
+      "link_type": "secondary",
+      "length_m": 23.89,
       "direction": 1,
-      "people": 12
+      "k5_tier": "hour",
+      "people": 866.89,
+      "distance_m": 24.37
     }
-  ]
+  ],
+  "truncated": false
 }
 ```
 
-`results` continues with one row per hour (and per `direction`) up to `end_time`, all
-sharing the same nearest `link_id`.
+`results` continues with one row per bucket and `direction`, all on the same `link_id`.
 
-For Norway (`NOR`), the coordinate snaps to the nearest road that has flow data in the
-requested window, so `distance_m` can be larger than the nearest street.
+| Field | Description |
+| ----- | ----------- |
+| `link_id`, `link_name`, `link_type`, `length_m` | The road link (OpenStreetMap-based network) and its length in metres. |
+| `direction` | `1` or `-1`, the two directions of travel on the link. |
+| `period` | Hourly only: the time-of-day period the hour belongs to (for example `MD`). |
+| `people` (hourly) / `trips` (daily) | People travelling on the link in that direction. |
+| `vehicles_total`, `vehicles_model`, `vehicles_telco`, `vehicles_counter`, `vehicles_commercial`, `vehicles_heavy`, `vehicles_local` | Vehicles on the link: the total, and by source or kind. |
+| `share_telco`, `share_counter` | Share of the figure backed by mobile network or traffic counter data. |
+| `distance_m` | Distance from the requested point to the link, in metres. |
 
-For Latvia (`LAT`), Lithuania (`LTU`) and Estonia (`EST`), the coordinate snaps to the
-nearest road of type `motorway`, `trunk`, `primary`, `secondary` or `tertiary` (including their `_link` ramps).
-Footways, paths, tracks, service roads and residential streets are not matched, so a
-coordinate on a minor street resolves to a nearby larger road and `distance_m` can be
-several hundred metres. Check `link_name` and `distance_m` to see which road was used. Flow
-for residential and minor streets is available by request via
+Flow for every road link of a country, minor streets included, is available by request via
 [Cloud Storage Export](#1-download-cloud-storage-exports) or
 [Shared BigQuery Dataset](#2-query-shared-bigquery-datasets). Contact support@telcofy.ai for
 more information.
 
-If the selected road has no flow data in the window, `results` holds a single row for it with
-`time_bucket`, `direction` and `people` set to `null`, so you can tell an empty window from a
-failed lookup:
+**2. Activity data preview**
 
-```json
-{"link_id":4853860,"link_name":"Vana-Posti","link_type":"tertiary","distance_m":5,"time_bucket":null,"direction":null,"people":null}
-```
-
-**Hourly vs daily (Estonia).** Flow is hourly by default. In Estonia an hour with fewer than 5
-people on a road is not published. A quiet road (about a quarter of roads with traffic) has
-no hourly rows, and the hourly lookup returns the empty row above for it. Add
-`activity_type=daily` to read the daily flow instead: it snaps to the nearest road with any
-daily figure in the window, so a quiet residential street returns its own count. `daily` is
-available for `EST` only; other countries return `400`.
-
-```bash
-curl -sG "https://dev.data.api.telcofy.ai/data-agg" \
-  -H "x-api-key: $API_KEY" \
-  --data-urlencode "agg_type=flow" \
-  --data-urlencode "country_code=EST" \
-  --data-urlencode "activity_type=daily" \
-  --data-urlencode "lat=59.425995" \
-  --data-urlencode "lon=24.704615" \
-  --data-urlencode "start_time=2025-10-14T00:00:00Z" \
-  --data-urlencode "end_time=2025-10-15T00:00:00Z" | jq
-```
-
-```json
-{"link_id":22930029,"link_name":"Mehaanika","link_type":"residential","distance_m":1,"batch_date":"2025-10-14","time_bucket":"2025-10-13T21:00:00.000Z","direction":-1,"people":38,"people_display":"38"}
-```
-
-- One row per day and `direction`. A day is returned when its date (a UTC day, as for activities)
-  overlaps the requested window. `batch_date` is the local (Estonian) date.
-- `time_bucket` is the start of the daily bucket, which runs from 00:00 local time to 04:00 local
-  time the next day (so `2025-10-13T21:00:00Z` for 14 October in summer time).
-- `people` is the number of people on the road in that direction that day. Under 5 people the
-  figure is not published: `people` is `null` and `people_display` is `"<5"`. It is never
-  returned as zero. For other rows `people_display` is `people` as text.
-- Hourly rows have no `batch_date` or `people_display`.
-
-> **Note:** flow rows do not yet carry a `type` field naming the bucket granularity
-> (`hourly` / `daily`) the way Activities and ODM rows do. It will be added in a future
-> release, following the same logic as those products.
-
-**2. Activity data preview**:
-
-Example `activities` query — returns aggregated activity counts (for example
-`sum_unique_people`) for one or more geographies (`geo_type`/`geo_ids`) within the
-requested `start_time`/`end_time` window, bucketed by `activity_type` (for example
-`hourly`):
-
-Activities are available for Estonia (see the [table above](#data-aggregation-api-data-agg)):
+`activities` returns, per area and bucket, the people present and their arrivals, for one or
+more areas (`geo_type` / `geo_ids`) in the `start_time` / `end_time` window. `activity_type`
+is `hourly` (default) or `daily`.
 
 ```bash
 curl -sG "https://dev.data.api.telcofy.ai/data-agg" \
   -H "x-api-key: $API_KEY" \
   --data-urlencode "agg_type=activities" \
-  --data-urlencode "country_code=EST" \
-  --data-urlencode "measure=sum_unique_people" \
-  --data-urlencode "activity_type=hourly" \
-  --data-urlencode "geo_type=grid_1000m" \
-  --data-urlencode "geo_ids=1kmN4124E5153" \
-  --data-urlencode "start_time=2025-10-14T08:00:00Z" \
-  --data-urlencode "end_time=2025-10-14T09:00:00Z" | jq '.results[0]'
+  --data-urlencode "country_code=NOR" \
+  --data-urlencode "activity_type=daily" \
+  --data-urlencode "geo_type=admin_lvl_2" \
+  --data-urlencode "geo_ids=NO_2_0301" \
+  --data-urlencode "measure=sum_unique_people,arrivals" \
+  --data-urlencode "start_time=2026-10-20T00:00:00Z" \
+  --data-urlencode "end_time=2026-10-21T00:00:00Z" | jq
 ```
 
+Example response:
 
-#### Asynchronous data aggregation endpoint  (POST `/data-agg` ) 
+```json
+{
+  "agg_type": "activities",
+  "measure": "sum_unique_people,arrivals",
+  "start_time": "2026-10-20T00:00:00Z",
+  "end_time": "2026-10-21T00:00:00Z",
+  "activity_type": "daily",
+  "country_code": "NOR",
+  "geo_type": "admin_lvl_2",
+  "geo_ids": ["NO_2_0301"],
+  "results": [
+    {
+      "batch_date": "2026-10-20",
+      "day_type": "weekday",
+      "time_bucket": "2026-10-20T00:00:00.000Z",
+      "geo_id": "NO_2_0301",
+      "geo_type": "admin_lvl_2",
+      "geo_name": "Oslo",
+      "k5_tier": "total",
+      "sum_unique_people": 865202,
+      "arrivals": 1263924
+    }
+  ],
+  "truncated": false
+}
+```
 
-**Fetch asynchronous aggregation job**
+Activity measures:
 
-For larger time ranges, or when you want the full result set exported to Cloud Storage
-rather than a 100-row inline preview, submit an asynchronous job instead of using the
-synchronous preview endpoint. The job runs as a BigQuery query you can poll for
-completion, then fetch either an inline preview or, when `full=true`, a Cloud Storage
-export path.
+| Measure | Geo types | Description |
+| ------- | --------- | ----------- |
+| `sum_unique_people` | all | Unique people seen in the area during the bucket. |
+| `arrivals` | all | Arrivals into the area during the bucket. |
+| `average_distance` | all | Average distance travelled to arrive. |
+| `average_travel_time` | all | Average travel time to arrive. |
+| `average_visit_length` | all | Average length of a visit. |
+| `arrivals_<mode>_modelled` | all | Arrivals by mode: `car`, `walk`, `bike`, `transit`; plus `arrivals_other_modelled`. |
+| `average_travel_time_<mode>_modelled` | all | Average travel time by mode (`car`, `walk`, `bike`, `transit`). |
+| `stays_count` | grid only | Number of stays in the cell. |
+| `stays_dwell_minutes` | grid only | Total minutes spent in the cell. |
 
-The same submit → poll → fetch flow applies to every `agg_type`; only the request body
-and the shape of the `preview` rows change. See [`Activities`](#activities) below, and
-[`ODM`](#origindestination-matrix-odm) for the Origin-Destination Matrix product.
+Each area is counted on its own: someone seen in several grid cells counts once in each, and
+cells below the privacy threshold are withheld. Do not add up grid cells to get an admin area
+figure; ask for the admin geo type instead.
+
+**3. Activity distributions preview**
+
+`agg_type=activity_distributions` takes the same geo types, IDs and window as `activities`
+and splits `people` and `arrivals` into bands (for example by travel distance). Each row is one
+band of one measure for one area and bucket:
+
+| Field | Description |
+| ----- | ----------- |
+| `role`, `measure` | What the distribution describes (for example `measure` distance). |
+| `band`, `band_name` | The band, and its label (for example `0-1 km`). |
+| `band_min`, `band_max`, `unit` | The band's bounds and their unit. |
+| `people`, `arrivals` | People and arrivals in the band. Use the `measure` parameter to pick one. |
+
+```bash
+curl -sG "https://dev.data.api.telcofy.ai/data-agg" \
+  -H "x-api-key: $API_KEY" \
+  --data-urlencode "agg_type=activity_distributions" \
+  --data-urlencode "country_code=NOR" \
+  --data-urlencode "activity_type=daily" \
+  --data-urlencode "geo_type=admin_lvl_2" \
+  --data-urlencode "geo_ids=NO_2_0301" \
+  --data-urlencode "start_time=2026-10-20T00:00:00Z" \
+  --data-urlencode "end_time=2026-10-21T00:00:00Z" | jq
+```
+
+#### Asynchronous data aggregation endpoint (POST `/data-agg`)
+
+For larger areas or time ranges, or when you want the full result set exported to Cloud
+Storage rather than a 100-row inline preview, submit an asynchronous job. The job runs as a
+BigQuery query you can poll for completion, then fetch either an inline preview or, when
+`full=true`, a Cloud Storage export path.
+
+The same submit → poll → fetch flow applies to every `agg_type`; only the request body and
+the shape of the `preview` rows change.
+
+| Body field | Description |
+| ---------- | ----------- |
+| `agg_type` | `activities`, `activity_distributions`, `odm` or `flow`. |
+| `country_code` | `NOR`, `EST`, `LAT` or `LTU` (or `NO`, `EE`, `LV`, `LT`). Default `NOR`. |
+| `start_time`, `end_time` | Required, ISO 8601. |
+| `activity_type` | `hourly` or `daily`. Required for `activities`, `activity_distributions` and `odm`; flow defaults to `hourly`. |
+| `measure` | Optional array (or comma list) of measure columns. Left out, every measure is returned. |
+| `geo_type`, `geo_ids` | Activities and distributions: the geo type and optional IDs. |
+| `origin_geo_type`, `origin_geo_ids`, `destination_geo_type`, `destination_geo_ids` | ODM: see [below](#origindestination-matrix-odm). |
+| `lat`, `lon` | Flow: the point to look up. |
+| `full` | Optional `true`: export every row to Cloud Storage (the job record is kept 7 days). Otherwise the preview is 100 rows and the job record expires after about 24 hours. |
 
 #### Activities
 
@@ -669,18 +756,17 @@ curl -s -X POST https://dev.data.api.telcofy.ai/data-agg \
   -H "Content-Type: application/json" \
   -d '{
         "agg_type": "activities",
-        "measure": "sum_unique_people",
-        "start_time": "2025-10-14T08:00:00Z",
-        "end_time": "2025-10-14T09:00:00Z",
-        "activity_type": "hourly",
         "country_code": "EST",
         "geo_type": "grid_1000m",
-        "geo_ids": ["1kmN4124E5153"],
+        "geo_ids": ["1kmN4111E5311"],
+        "start_time": "2025-10-11T00:00:00Z",
+        "end_time": "2025-10-12T00:00:00Z",
+        "activity_type": "daily",
         "full": false
       }'
 ```
 
-Example response:
+Example response (`202 Accepted`):
 
 ```json
 {"job_id":"12bd1616-002b-43c5-bc0c-422a2110c481","status":"queued","status_url":"/data-agg/status/12bd1616-002b-43c5-bc0c-422a2110c481","results_url":"/data-agg/results/12bd1616-002b-43c5-bc0c-422a2110c481"}
@@ -698,12 +784,12 @@ curl -s -X GET https://dev.data.api.telcofy.ai/data-agg/status/12bd1616-002b-43c
 Example response:
 
 ```json
-{"job_id":"12bd1616-002b-43c5-bc0c-422a2110c481","status":"completed","progress":100,"created_at":"2026-05-05T13:15:06.888Z","started_at":"2026-05-05T13:15:07.470Z","finished_at":"2026-05-05T13:15:09.194Z","estimated_completion":null,"error":null}
+{"job_id":"12bd1616-002b-43c5-bc0c-422a2110c481","status":"completed","progress":100,"created_at":"2026-10-29T13:35:27.653Z","start_time":"2026-10-29T13:35:28.051Z","end_time":"2026-10-29T13:35:28.120Z","estimated_completion":null,"error":null}
 ```
 
-`created_at`, `started_at` and `finished_at` describe the **job's** lifecycle. They are
-distinct from `start_time`/`end_time`, which always describe the **data** window you
-requested.
+In the status response, `created_at`, `start_time` and `end_time` describe the **job's**
+lifecycle (when the BigQuery job was created, started and finished), not the **data** window
+you requested.
 
 **Step 3 — Fetch results:**
 
@@ -712,98 +798,57 @@ curl -s -X GET https://dev.data.api.telcofy.ai/data-agg/results/12bd1616-002b-43
   -H "x-api-key: $API_KEY"
 ```
 
-Example response (`full=false` — inline preview):
+Example response (`full=false` — inline preview, shortened):
 
 ```json
-{"job_id":"12bd1616-002b-43c5-bc0c-422a2110c481","status":"completed","country_code":"EST","preview":[{"sum_unique_people":16016,"time_bucket":"2025-10-14 08:00:00","geo_id":"1kmN4124E5153","geo_name":"1kmN4124E5153","type":"hourly"}]}
+{
+  "job_id": "12bd1616-002b-43c5-bc0c-422a2110c481",
+  "status": "completed",
+  "country_code": "EST",
+  "preview": [
+    {
+      "batch_date": "2025-10-11",
+      "day_type": "saturday",
+      "time_bucket": "2025-10-11T00:00:00.000Z",
+      "geo_id": "1kmN4111E5311",
+      "geo_type": "grid_1000m",
+      "k5_tier": "1km",
+      "sum_unique_people": 17,
+      "stays_count": 19,
+      "arrivals": null
+    }
+  ],
+  "truncated": false
+}
 ```
 
-When `full=true`, the results response returns a Cloud Storage path instead of an inline preview:
+When the job was created with `full=true`, request `GET /data-agg/results/{jobId}?full=true`
+to get the Cloud Storage path of the export instead of an inline preview:
 
 ```json
-{"http_path":"https://console.cloud.google.com/storage/browser/telcofy-user-data/results/UHkLS2lo3xNjpG2JYyJLGZ9Obsf2/f1589d4e-eab4-4232-adee-476cebf71a07/activities_daily_sum_unique_people"}
+{"job_id":"12bd1616-002b-43c5-bc0c-422a2110c481","status":"completed","country_code":"EST","http_path":"https://console.cloud.google.com/storage/browser/telcofy-user-data/results/<USER_ID>/12bd1616-002b-43c5-bc0c-422a2110c481/<export>"}
 ```
 
 Download the exported files from Cloud Storage using the OAuth token retrieved in [Section 1](#1-download-cloud-storage-exports).
 
-**Estonia (`country_code: "EST"`)**
-
-Activities are available for Estonia. Use
-[`/data-availability`](#data-availability-api-data-availability) with `country=EE` to see
-which dates are available.
-
-| Parameter | Supported values for `EST` |
-| --------- | -------------------------- |
-| `geo_type` | `grid_1000m` (INSPIRE 1 km cells) or `admin_level_2` (municipalities). `admin_level_4` is not available for Estonia. |
-| `geo_ids` | Strings as returned by the Maps API: INSPIRE cell IDs for `grid_1000m` (for example `1kmN4125E5151`), or EHAK municipality codes for `admin_level_2` (for example `"784"` = Tallinn). Other formats, numeric `grid_1000m` IDs included, return `400`. |
-| `activity_type` | `hourly` or `daily` |
-| `measure` | `grid_1000m`: `sum_unique_people`, `stays_count`, `stays_dwell_minutes` or `stays_devices`; with `activity_type=daily` also `sum_people_home`, `sum_people_work` or `sum_people_visitors` (below). `admin_level_2`: `sum_unique_people` only. |
-
-The request in Step 1 above is an Estonian example. `geo_name` is the INSPIRE cell ID for
-`grid_1000m` and the municipality name for `admin_level_2`. `time_bucket` is a UTC string:
-`YYYY-MM-DD HH:MM:SS` for `hourly`, `YYYY-MM-DD` for `daily`. A bucket is returned when it
-overlaps the requested `start_time`/`end_time` window. Cells with fewer than 5 people in a
-bucket are not published at 1 km, so they are missing from the results rather than
-returned as zero.
-
-`admin_level_2` returns full municipality totals: each person is counted once per
-municipality and bucket. Do not add up `grid_1000m` cells to get a municipality figure:
-someone seen in several cells would be counted several times, and cells below 5 people are
-missing. Example daily row: `{"sum_unique_people":539446,"time_bucket":"2025-10-14","geo_id":"784","geo_name":"Tallinn","type":"daily"}`.
-An hour is withheld (missing from the results) when publishing it would reveal fewer than
-5 people.
-
-**Home, work and visitors (daily, `grid_1000m` only).** These measures split the people seen in a
-cell on a day by whose place it is:
-
-| Measure | Meaning |
-| ------- | ------- |
-| `sum_people_home` | People whose home is in the cell |
-| `sum_people_work` | People whose usual work or school place is in the cell |
-| `sum_people_visitors` | Everyone else seen in the cell (visitors) |
-
-When all three are published they add up to `sum_unique_people`. A group of 1 to 4 people is not published and
-comes back as `null`, never as zero (a `0` means no one). They are not available hourly, for
-`admin_level_2` or for other countries; those requests return `400`. Example daily row:
-`{"sum_people_home":4629,"time_bucket":"2025-10-14","geo_id":"1kmN4125E5151","geo_name":"1kmN4125E5151","type":"daily"}`.
-
-The GET preview accepts the same Estonian parameters, plus `country_code=EST`:
-
-```bash
-curl -sG "https://dev.data.api.telcofy.ai/data-agg" \
-  -H "x-api-key: $API_KEY" \
-  --data-urlencode "agg_type=activities" \
-  --data-urlencode "country_code=EST" \
-  --data-urlencode "measure=sum_unique_people" \
-  --data-urlencode "activity_type=daily" \
-  --data-urlencode "geo_type=admin_level_2" \
-  --data-urlencode "geo_ids=784" \
-  --data-urlencode "start_time=2025-10-14T00:00:00Z" \
-  --data-urlencode "end_time=2025-10-15T00:00:00Z" | jq
-```
+`GET /data-agg/jobs` lists your jobs with their parameters, `status` and `http_path`.
 
 #### Origin–Destination Matrix (ODM)
 
-Set `agg_type` to `"odm"` to request Telcofy's Origin-Destination Matrix product: trip
-volumes between an origin geography and a destination geography, bucketed over the
-requested time window.
+Set `agg_type` to `"odm"` to request Telcofy's Origin-Destination Matrix product: trips
+between an origin area and a destination area, per bucket of the requested window. ODM is
+POST only.
 
 ODM jobs take the same `start_time`, `end_time`, `activity_type`, `measure` and `full`
-parameters as Activities, plus:
+fields as Activities, plus:
 
-- `origin_geo_type` / `origin_geo_ids` — the origin geography type and IDs.
-- `destination_geo_type` / `destination_geo_ids` — the destination geography type and IDs.
-- `country_code` — `"LAT"`, `"LTU"`, `"EST"` or `"NOR"`.
+- `origin_geo_type` / `origin_geo_ids` — the origin geo type and optional IDs.
+- `destination_geo_type` / `destination_geo_ids` — the destination geo type and optional IDs.
 
-`origin_geo_type`/`destination_geo_type` and the ID format depend on the country (see the
-[table above](#data-aggregation-api-data-agg)); `activity_type` is `hourly` or `daily`.
-`measure` is still required by the API, but for ODM it's only used to name the Cloud Storage
-export folder when `full=true` — it doesn't select or filter columns; every ODM row returns
-the same fixed set of fields.
-
-For Norway, `admin_level_4` is grunnkrets and `admin_level_2` is kommune, with the same IDs as
-the Maps API (for example `301` = Oslo, `3201` = Bærum). The two levels can be mixed, for
-example grunnkrets to kommune. Kommune figures are exact sums of the grunnkrets trips.
+Both ends are either admin geo types, in any mix (for example `admin_lvl_4` to
+`admin_lvl_2`, or `station` to `admin_lvl_1` in Latvia), or the **same** grid size on both
+ends (`grid_1000m` to `grid_1000m`; `grid_250m` to `grid_1000m` returns `400`). Either end's
+IDs may be left out to get every area. Rows come largest `trips` first.
 
 **Step 1 — Submit an asynchronous ODM job:**
 
@@ -813,15 +858,13 @@ curl -s -X POST https://dev.data.api.telcofy.ai/data-agg \
   -H "Content-Type: application/json" \
   -d '{
         "agg_type": "odm",
-        "measure": "trips",
-        "start_time": "2026-09-09T00:00:00Z",
-        "end_time": "2026-09-10T00:00:00Z",
-        "activity_type": "daily",
         "country_code": "NOR",
-        "origin_geo_type": "admin_level_2",
-        "origin_geo_ids": [301],
-        "destination_geo_type": "admin_level_2",
-        "destination_geo_ids": [3201],
+        "origin_geo_type": "admin_lvl_2",
+        "origin_geo_ids": ["NO_2_0301"],
+        "destination_geo_type": "admin_lvl_2",
+        "start_time": "2026-10-20T00:00:00Z",
+        "end_time": "2026-10-21T00:00:00Z",
+        "activity_type": "daily",
         "full": false
       }'
 ```
@@ -829,33 +872,43 @@ curl -s -X POST https://dev.data.api.telcofy.ai/data-agg \
 Example response:
 
 ```json
-{"job_id":"7a2e0c9d-1f34-4b6e-9d21-8e7a5c3b0f11","status":"queued","status_url":"/data-agg/status/7a2e0c9d-1f34-4b6e-9d21-8e7a5c3b0f11","results_url":"/data-agg/results/7a2e0c9d-1f34-4b6e-9d21-8e7a5c3b0f11"}
+{"job_id":"a6effca7-15c3-4fe7-9018-2eef9972d002","status":"queued","status_url":"/data-agg/status/a6effca7-15c3-4fe7-9018-2eef9972d002","results_url":"/data-agg/results/a6effca7-15c3-4fe7-9018-2eef9972d002"}
 ```
 
-This Norwegian request returns Oslo → Bærum for 2026-09-09: `"trips": 92072`.
-
-Estonia (`country_code: "EST"`) requires `grid_1000m` on both sides. `geo_ids` are INSPIRE
-`grid_1000m` cell IDs as strings (for example `"1kmN4125E5151"`); numeric IDs return `400`:
+More request bodies:
 
 ```python
 import requests
 
-requests.request(
-    "POST",
+# Lithuania: 1 km cell to 1 km cell, one hour, trips only, full export
+requests.post(
     "https://dev.data.api.telcofy.ai/data-agg",
-    headers={"x-api-key": API_KEY, "Content-Type": "application/json"},
+    headers={"x-api-key": API_KEY},
     json={
         "agg_type": "odm",
-        "measure": "trips",
-        "start_time": "2025-10-14T00:00:00Z",
-        "end_time": "2025-10-15T00:00:00Z",
-        "activity_type": "daily",
+        "country_code": "LTU",
         "origin_geo_type": "grid_1000m",
-        "origin_geo_ids": ["1kmN4123E5153"],
         "destination_geo_type": "grid_1000m",
-        "destination_geo_ids": ["1kmN4124E5153"],
-        "full": False,
-        "country_code": "EST"
+        "measure": ["trips"],
+        "start_time": "2026-09-25T06:00:00Z",
+        "end_time": "2026-09-25T07:00:00Z",
+        "activity_type": "hourly",
+        "full": True,
+    },
+)
+
+# Latvia: from border crossings to novads
+requests.post(
+    "https://dev.data.api.telcofy.ai/data-agg",
+    headers={"x-api-key": API_KEY},
+    json={
+        "agg_type": "odm",
+        "country_code": "LAT",
+        "origin_geo_type": "station",
+        "destination_geo_type": "admin_lvl_1",
+        "start_time": "2026-09-25T00:00:00Z",
+        "end_time": "2026-09-26T00:00:00Z",
+        "activity_type": "daily",
     },
 )
 ```
@@ -866,63 +919,90 @@ the returned `status_url`.
 **Step 3 — Fetch results:**
 
 ```bash
-curl -s -X GET https://dev.data.api.telcofy.ai/data-agg/results/7a2e0c9d-1f34-4b6e-9d21-8e7a5c3b0f11 \
+curl -s -X GET https://dev.data.api.telcofy.ai/data-agg/results/a6effca7-15c3-4fe7-9018-2eef9972d002 \
   -H "x-api-key: $API_KEY"
 ```
 
-Example response for the Estonia request above (`full=false` — inline preview), with one
-entry per origin/destination pair per bucket:
+Example response for the Norwegian request above (`full=false` — inline preview, shortened),
+with one entry per origin/destination pair per bucket:
 
 ```json
 {
-  "job_id": "7a2e0c9d-1f34-4b6e-9d21-8e7a5c3b0f11",
+  "job_id": "a6effca7-15c3-4fe7-9018-2eef9972d002",
   "status": "completed",
-  "country_code": "EST",
+  "country_code": "NOR",
   "preview": [
     {
-      "batch_date": "2025-10-14",
-      "time_bucket": "2025-10-14",
-      "origin_geo_id": "1kmN4123E5153",
-      "destination_geo_id": "1kmN4124E5153",
-      "trips": 3319,
-      "General_Distance": 1000,
-      "Average_Speed": 42.09
+      "batch_date": "2026-10-20",
+      "day_type": "weekday",
+      "time_bucket": "2026-10-20T00:00:00.000Z",
+      "origin_geo_id": "NO_2_0301",
+      "destination_geo_id": "NO_2_0301",
+      "origin_geo_name": "Oslo",
+      "destination_geo_name": "Oslo",
+      "origin_geo_type": "admin_lvl_2",
+      "destination_geo_type": "admin_lvl_2",
+      "k5_tier": "total",
+      "trips": 1854976,
+      "unique_people": 584780,
+      "trips_car_modelled": 445800,
+      "trips_walk_modelled": 853834,
+      "cross_border": false
     }
-  ]
+  ],
+  "truncated": true
 }
 ```
 
-| Field | Type | Description |
-| ----- | ---- | ----------- |
-| `batch_date` | string | Date the aggregated row covers. |
-| `time_bucket` | string | UTC bucket: `YYYY-MM-DD HH:MM:SS` for `hourly`, `YYYY-MM-DD` for `daily`. |
-| `origin_geo_id` / `destination_geo_id` | number or string | IDs of the origin/destination geography, matching `origin_geo_type`/`destination_geo_type`: numbers for `NOR`, strings (INSPIRE IDs) for `EST`, `LAT` and `LTU`. |
-| `General_Distance` *(optional)* | number | Straight-line distance between origin and destination, in meters. |
-| `Average_Speed` *(optional)* | number | Average travel speed for the trip, in km/h. |
-| `trips` | number | Estimated trip count for the origin/destination pair. |
+Grid ODM rows have no `origin_geo_name` / `destination_geo_name`. ODM measures:
+
+| Measure | Description |
+| ------- | ----------- |
+| `trips` | Estimated trips between the origin and destination. |
+| `unique_people` | Unique people making those trips. |
+| `trips_<mode>_modelled` | Trips by mode: `car`, `walk`, `bike`, `transit`, `other`. |
+| `trips_commercial` | Commercial trips. |
+| `trips_role_<role>_modelled` | Trips by traveller role: `home`, `work`, `school`, `elsewhere`; plus `trips_role_unknown`. |
+| `trips_purpose_<purpose>_modelled` | Trips by purpose: `home`, `work`, `education`, `business`, `shopping`, `leisure`, `errands`; plus `trips_purpose_unknown`. |
+| `share_telco`, `vehicle_trips_telco` | Share of trips, and vehicle trips, backed by mobile network data. |
+| `General_Distance` | Distance between origin and destination, in metres. |
+| `Average_Speed` | Average travel speed, in km/h. |
+| `Average_Travel_Time`, `Average_Travel_Time_<mode>_modelled` | Average travel time, overall and by mode (`car`, `walk`, `bike`, `transit`). |
+| `cross_border` | Always returned: `true` when the trip crosses the national border. |
+
+A measure the country's data doesn't provide is `null`. Pairs below the privacy threshold
+are withheld at fine levels, so adding up fine pairs undercounts total trips; ask for a
+coarser geo type to get the totals.
 
 When `full=true`, results are returned the same way as Activities — a Cloud Storage
 `http_path` instead of an inline `preview`.
 
-> **Small flows (Latvia, Lithuania, Estonia):** origin/destination pairs with fewer than 5
-> trips are not published at 1 km; they are only counted in coarser aggregates that
-> `/data-agg` does not serve yet. Summing 1 km pairs therefore undercounts total trips (in
-> Estonia 73–77% of daily trips are at 1 km, depending on the day; the rest are coarser
-> aggregates, including the long-distance layer). Norway has no such suppression: every pair
-> with a trip is published at grunnkrets level.
+#### Migrating from the earlier schema
 
-> **Optional fields:** `General_Distance` and `Average_Speed` are `null` where the delivery
-> doesn't model them (for example all of Norway). Contact
-> [support@telcofy.ai](mailto:support@telcofy.ai) to check what's available for your country.
+| Before | Catalogue 1.0 |
+| ------ | ------------- |
+| `geo_type` `admin_level_2` / `admin_level_4` (Norway, Estonia) | `admin_lvl_1` … `admin_lvl_4`, per country (see [Geo types and IDs](#geo-types-and-ids)) |
+| Numeric Norwegian IDs (`301`), EHAK codes (`"784"`) | Prefixed strings (`NO_2_0301`, `EE_3_1089`), as listed by the Maps API |
+| `measure` required, one column | Optional, any number of columns |
+| `type` column (`hourly` / `daily`) | Gone; `batch_date`, `day_type` and `k5_tier` are always returned |
+| `time_bucket` as `YYYY-MM-DD HH:MM:SS` | ISO timestamp (`2026-10-20T00:00:00.000Z`) |
+| `stays_devices`, `sum_people_home`, `sum_people_work`, `sum_people_visitors` | Gone; see `activity_distributions` and the ODM `trips_role_*` measures |
+| `trips_car` and other unsuffixed modes | `trips_car_modelled` etc. |
+| Activities in Estonia only; ODM on 1 km cells only in the Baltics | Activities, distributions and ODM in every country, admin and grid |
+| Daily flow in Estonia only; empty-link row when the road has no data | Hourly and daily flow everywhere, from the nearest link with data; no rows when none within 300 m |
+| `last_modified_time` in `/data-availability` | `day_type`; tables renamed (below) |
+
+Look up the new IDs of your areas with the Maps API, which serves the catalogue layers
+(`country`, `admin_lvl_<n>`, `station`, `model_grid`, `network_links`) for every country.
 
 ### Data Availability API (`/data-availability`)
 
 > **Note:** The `/data-availability` endpoint is only available in the **Telcofy Dev environment** (`https://dev.data.api.telcofy.ai`). It requires a separate Dev API key. Contact [support@telcofy.ai](mailto:support@telcofy.ai) to get access to Telcofy Dev and test features under development.
 
-Use `GET /data-availability` to check which daily batches of a data product have been
-delivered before you query or export them. The response lists one row per table and
-`batch_date` that contains data, together with its row count and the time it was last
-updated. Only datasets your account has been granted access to are returned.
+Use `GET /data-availability` to check which dates of a data product have been delivered
+before you query or export them. The response lists one row per catalogue table and
+`batch_date` that holds data, with its `day_type` and row count. Only datasets and countries
+your account has been granted are returned. New deliveries show within about five minutes.
 
 **Query parameters** — all optional. Without any parameters, the endpoint returns every
 dataset and date you have access to, across all supported countries.
@@ -930,29 +1010,29 @@ dataset and date you have access to, across all supported countries.
 | Parameter | Supported values | Description |
 | --------- | ---------------- | ----------- |
 | `country` | `LV` (Latvia), `LT` (Lithuania), `EE` (Estonia), `NO` (Norway) | Country to check. The 3-letter codes `LAT`, `LTU`, `EST` and `NOR` are also accepted; matching is case-insensitive. Omit to check every country you have access to. |
-| `dataset` | `flows`, `odm`, `activities` | Data product to check. `activities` is available for Estonia only. Omit to return all datasets you have access to. |
+| `dataset` | `activities`, `odm`, `flows` | Data product to check. Omit to return all datasets you have access to. |
 | `start_time` | `YYYY-MM-DD` or ISO 8601 timestamp | Earliest `batch_date` to include (inclusive). Only the date part is used, so `2026-09-01T12:00:00Z` is treated as `2026-09-01`. |
 | `end_time` | `YYYY-MM-DD` or ISO 8601 timestamp | Latest `batch_date` to include (inclusive). Must not be before `start_time`. |
 
-**Check everything available for Latvia:**
+**Check everything available for Norway:**
 
 ```bash
-curl -s "https://dev.data.api.telcofy.ai/data-availability?country=LV" \
+curl -s "https://dev.data.api.telcofy.ai/data-availability?country=NO" \
   -H "x-api-key: $API_KEY" | jq
 ```
 
-Example response:
+Example response (shortened):
 
 ```json
 {
   "results": [
     {
-      "country_code": "LAT",
-      "dataset": "flows",
-      "table_name": "flows_daily",
-      "batch_date": "2026-09-03",
-      "total_rows": 220447,
-      "last_modified_time": "2026-10-05T06:11:37.008Z"
+      "country_code": "NOR",
+      "dataset": "activities",
+      "table_name": "activity_adaptive_daily",
+      "batch_date": "2026-10-20",
+      "day_type": "weekday",
+      "total_rows": 104969
     }
   ]
 }
@@ -969,42 +1049,21 @@ curl -sG "https://dev.data.api.telcofy.ai/data-availability" \
   --data-urlencode "end_time=2026-09-30" | jq
 ```
 
-**Check Estonian activities:**
-
-```bash
-curl -sG "https://dev.data.api.telcofy.ai/data-availability" \
-  -H "x-api-key: $API_KEY" \
-  --data-urlencode "country=EE" \
-  --data-urlencode "dataset=activities" | jq
-```
-
-Example response:
-
-```json
-{
-  "results": [
-    {
-      "country_code": "EST",
-      "dataset": "activities",
-      "table_name": "activity_daily",
-      "batch_date": "2025-10-11",
-      "total_rows": 14353,
-      "last_modified_time": "2026-10-07T07:30:41.645Z"
-    }
-  ]
-}
-```
-
-Rows are sorted by `dataset`, `table_name` and then `batch_date`.
-
 | Field | Type | Description |
 | ----- | ---- | ----------- |
 | `country_code` | string | 3-letter country code (`LAT`, `LTU`, `EST` or `NOR`). |
-| `dataset` | string | Data product (`flows`, `odm` or `activities`). |
-| `table_name` | string | Table holding the data: `flows_daily`, `flows_hourly`, `odm_daily`, `odm_hourly`, or for `activities` `activity_hourly`, `activity_daily`, `activity_dwell` (stays by dwell-time band), `activity_destrank` (people in each area split into residents, regular workers or students, and visitors), and `activity_admin_daily` / `activity_admin_hourly` (municipality, county and country totals). |
-| `batch_date` | string | Date (`YYYY-MM-DD`) of the delivered batch. |
-| `total_rows` | integer | Number of rows in that batch. Batches with no rows are not listed. |
-| `last_modified_time` | ISO 8601 string | When the batch was last written or refreshed. |
+| `dataset` | string | Data product (`activities`, `odm` or `flows`). |
+| `table_name` | string | Catalogue table holding the data (below). |
+| `batch_date` | string | Date (`YYYY-MM-DD`) the rows cover. |
+| `day_type` | string | Kind of day, for example `weekday` or `saturday`. |
+| `total_rows` | integer | Number of rows for that date. Dates with no rows are not listed. |
+
+| `dataset` | `table_name` | Served by |
+| --------- | ------------ | --------- |
+| `activities` | `activity_admin_hourly`, `activity_admin_daily` (admin geo types), `activity_adaptive_hourly`, `activity_adaptive_daily` (grid) | `agg_type=activities` |
+| `activities` | `activity_admin_distribution_hourly`, `activity_admin_distribution_daily`, `activity_adaptive_distribution_hourly`, `activity_adaptive_distribution_daily` | `agg_type=activity_distributions` |
+| `odm` | `odm_admin_hourly`, `odm_admin_daily`, `odm_adaptive_hourly`, `odm_adaptive_daily` | `agg_type=odm` |
+| `flows` | `flows_hourly`, `flows_daily` | `agg_type=flow` |
 
 **Errors**
 
