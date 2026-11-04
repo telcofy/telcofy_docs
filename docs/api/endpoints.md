@@ -29,12 +29,12 @@ See `authentication.md` for header requirements and token exchange details.
 
 | Method | Path | Description | Auth |
 | ------ | ---- | ----------- | ---- |
-| GET | `/data-agg` | Run a synchronous preview (`activities` or `flow`; ODM is POST only). | `x-api-key` |
-| POST | `/data-agg` | Submit an aggregation job for delivered data (`activities`, `odm`, `flow`; `full=true` exports to Cloud Storage). | `x-api-key` |
+| GET | `/data-agg` | Run a synchronous preview of data catalogue 1.0 (`activities`, `activity_distributions` or `flow`; ODM is POST only). Flow is Dev environment only. See [Data Aggregation API](data-delivery.md#data-aggregation-api-data-agg). | `x-api-key` |
+| POST | `/data-agg` | Submit an aggregation job for delivered data (`activities`, `activity_distributions`, `odm`, `flow`; `full=true` exports to Cloud Storage). | `x-api-key` |
 | GET | `/data-agg/status/:jobId` | Check aggregation job status and progress. | `x-api-key` |
 | GET | `/data-agg/results/:jobId` | Retrieve preview results or export metadata (`?full=true`). | `x-api-key` |
 | GET | `/data-agg/jobs` | List historical aggregation jobs for the caller. | `x-api-key` |
-| GET | `/data-availability` | List delivered daily batches per dataset (optional `country`, `dataset`, `start_time`, `end_time`). Dev environment only. See [Data Delivery Guide](data-delivery.md#data-availability-api-data-availability). | `x-api-key` |
+| GET | `/data-availability` | List the delivered dates per catalogue table, with `day_type` and row count (optional `country`, `dataset`, `start_time`, `end_time`). Dev environment only. See [Data Delivery Guide](data-delivery.md#data-availability-api-data-availability). | `x-api-key` |
 | POST | `/admin/realtime` | Enable or disable realtime monitoring for a saved map. | `x-api-key` |
 | GET | `/admin/realtime/data` | Realtime headcount rows for monitored maps, newest first (filters: `datetime_from`, `datetime_to`, `target_id`, `limit`, `offset`). See [Realtime Admin API](data-delivery.md#realtime-admin-api-adminrealtime). | `x-api-key` |
 | GET | `/admin/realtime/data/country` | Realtime headcount rows with a by-country breakdown (same filters). Requires the country view on your account. | `x-api-key` |
