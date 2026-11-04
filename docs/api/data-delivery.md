@@ -475,7 +475,11 @@ Example response:
 
 ### Data Aggregation API (`/data-agg`)
 
-> **Note:** The `/data-agg` endpoint is only available in the **Telcofy Dev environment** (`https://dev.data.api.telcofy.ai`). It requires a separate Dev API key. Contact [support@telcofy.ai](mailto:support@telcofy.ai) to get access to Telcofy Dev and test features under development.
+> **Note:** Activities and activity distributions are served by the production API
+> (`https://data.api.telcofy.ai`) with your API key. Flow (`agg_type=flow`) is only available in the
+> **Telcofy Dev environment** (`https://dev.data.api.telcofy.ai`), which requires a separate Dev
+> API key. Contact [support@telcofy.ai](mailto:support@telcofy.ai) to get access to Telcofy Dev and
+> test features under development.
 
 Use `/data-agg` to request Telcofy's analytical products: Activities, Activity
 distributions, Origin-Destination Matrix (ODM) and Flow. Start with synchronous previews or
@@ -555,6 +559,9 @@ Usage: quick preview of the data, at most 100 rows. GET supports `agg_type` `act
 [POST `/data-agg`](#origindestination-matrix-odm).
 
 **1. Flow data preview**
+
+> **Note:** Flow is only available in the **Telcofy Dev environment**
+> (`https://dev.data.api.telcofy.ai`) and requires a Dev API key.
 
 Given a coordinate, `flow` returns the traffic on the nearest road link that has flow data in
 the requested window. Flow is available hourly (default) and daily in every country.
@@ -640,17 +647,19 @@ more information.
 more areas (`geo_type` / `geo_ids`) in the `start_time` / `end_time` window. `activity_type`
 is `hourly` (default) or `daily`.
 
+For example, unique people and arrivals in Lasnamäe linnaosa, Tallinn, on 14 October 2025:
+
 ```bash
-curl -sG "https://dev.data.api.telcofy.ai/data-agg" \
+curl -sG "https://data.api.telcofy.ai/data-agg" \
   -H "x-api-key: $API_KEY" \
   --data-urlencode "agg_type=activities" \
-  --data-urlencode "country_code=NOR" \
+  --data-urlencode "country_code=EST" \
   --data-urlencode "activity_type=daily" \
-  --data-urlencode "geo_type=admin_lvl_2" \
-  --data-urlencode "geo_ids=NO_2_0301" \
+  --data-urlencode "geo_type=admin_lvl_3" \
+  --data-urlencode "geo_ids=EE_3_0387" \
   --data-urlencode "measure=sum_unique_people,arrivals" \
-  --data-urlencode "start_time=2026-10-20T00:00:00Z" \
-  --data-urlencode "end_time=2026-10-21T00:00:00Z" | jq
+  --data-urlencode "start_time=2025-10-14T00:00:00Z" \
+  --data-urlencode "end_time=2025-10-15T00:00:00Z" | jq
 ```
 
 Example response:
@@ -659,23 +668,23 @@ Example response:
 {
   "agg_type": "activities",
   "measure": "sum_unique_people,arrivals",
-  "start_time": "2026-10-20T00:00:00Z",
-  "end_time": "2026-10-21T00:00:00Z",
+  "start_time": "2025-10-14T00:00:00Z",
+  "end_time": "2025-10-15T00:00:00Z",
   "activity_type": "daily",
-  "country_code": "NOR",
-  "geo_type": "admin_lvl_2",
-  "geo_ids": ["NO_2_0301"],
+  "country_code": "EST",
+  "geo_type": "admin_lvl_3",
+  "geo_ids": ["EE_3_0387"],
   "results": [
     {
-      "batch_date": "2026-10-20",
+      "batch_date": "2025-10-14",
       "day_type": "weekday",
-      "time_bucket": "2026-10-20T00:00:00.000Z",
-      "geo_id": "NO_2_0301",
-      "geo_type": "admin_lvl_2",
-      "geo_name": "Oslo",
+      "time_bucket": "2025-10-14T00:00:00.000Z",
+      "geo_id": "EE_3_0387",
+      "geo_type": "admin_lvl_3",
+      "geo_name": "Lasnamäe linnaosa",
       "k5_tier": "total",
-      "sum_unique_people": 865202,
-      "arrivals": 1263924
+      "sum_unique_people": 170108,
+      "arrivals": 203206
     }
   ],
   "truncated": false
@@ -736,8 +745,8 @@ returned, since they repeat the request:
 | `band_min`, `band_max`, `unit` | With `distance`, `travel_time` or `visit_length` (`unit` `km` or `min`). |
 | `people`, `arrivals` | People and arrivals in the band. Use the `measure` parameter to pick one. |
 
-`distribution` and `role` are on the production API (`https://data.api.telcofy.ai`). Dev
-returns every distribution with the full column set.
+Dev does not have `distribution` and `role` yet; it returns every distribution with the full
+column set.
 
 **Where do visitors come from?** Ask for `origin_lau` on the area. For example, for six 250 m
 grid cells in Ülemiste City, Tallinn:
@@ -759,10 +768,13 @@ curl -s -X POST https://data.api.telcofy.ai/data-agg \
       }' | jq
 ```
 
-Preview rows from the [results endpoint](#activities):
+Then fetch the rows from the [results endpoint](#activities) (shortened):
 
 ```json
 {
+  "job_id": "b8b1a362-dfa3-4488-8c84-0747d428ebdb",
+  "status": "completed",
+  "country_code": "EST",
   "preview": [
     {
       "batch_date": "2025-10-14",
@@ -770,14 +782,18 @@ Preview rows from the [results endpoint](#activities):
       "time_bucket": "2025-10-14T00:00:00.000Z",
       "geo_id": "250mN16491E20623",
       "role": "work",
-      "band": "EE_2_0653",
-      "band_name": "Rae vald",
-      "people": 36,
-      "arrivals": 37
+      "band": "EE_2_0141",
+      "band_name": "Anija vald",
+      "people": 2,
+      "arrivals": 2
     }
-  ]
+  ],
+  "truncated": true
 }
 ```
+
+The six cells hold more than 100 origin rows, so the preview is cut (`"truncated": true`). Add
+`"full": true` to export every row.
 
 Add `"role": "work"` for commuters only. To rank origins for the whole area, sum `arrivals`
 by `band` over the cells and roles. Arrivals add up across cells. `people` does not, because
@@ -808,19 +824,22 @@ the shape of the `preview` rows change.
 
 #### Activities
 
+The steps below use the six 250 m grid cells of Ülemiste City, Tallinn, on 14 October 2025.
+
 **Step 1 — Submit an asynchronous aggregation job** (exports to Cloud Storage when `full=true`):
 
 ```bash
-curl -s -X POST https://dev.data.api.telcofy.ai/data-agg \
+curl -s -X POST https://data.api.telcofy.ai/data-agg \
   -H "x-api-key: $API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
         "agg_type": "activities",
         "country_code": "EST",
-        "geo_type": "grid_1000m",
-        "geo_ids": ["1kmN4111E5311"],
-        "start_time": "2025-10-11T00:00:00Z",
-        "end_time": "2025-10-12T00:00:00Z",
+        "geo_type": "grid_250m",
+        "geo_ids": ["250mN16491E20623", "250mN16491E20624", "250mN16491E20625",
+                    "250mN16492E20623", "250mN16492E20624", "250mN16492E20625"],
+        "start_time": "2025-10-14T00:00:00Z",
+        "end_time": "2025-10-15T00:00:00Z",
         "activity_type": "daily",
         "full": false
       }'
@@ -829,7 +848,7 @@ curl -s -X POST https://dev.data.api.telcofy.ai/data-agg \
 Example response (`202 Accepted`):
 
 ```json
-{"job_id":"12bd1616-002b-43c5-bc0c-422a2110c481","status":"queued","status_url":"/data-agg/status/12bd1616-002b-43c5-bc0c-422a2110c481","results_url":"/data-agg/results/12bd1616-002b-43c5-bc0c-422a2110c481"}
+{"job_id": "601e135e-1438-4c02-ae48-a4af6a9457f9", "status": "queued", "status_url": "/data-agg/status/601e135e-1438-4c02-ae48-a4af6a9457f9", "results_url": "/data-agg/results/601e135e-1438-4c02-ae48-a4af6a9457f9"}
 ```
 
 **Step 2 — (Optional) Check job status:**
@@ -837,14 +856,14 @@ Example response (`202 Accepted`):
 For long-running queries you can poll `status_url` to track progress before fetching results.
 
 ```bash
-curl -s -X GET https://dev.data.api.telcofy.ai/data-agg/status/12bd1616-002b-43c5-bc0c-422a2110c481 \
+curl -s -X GET https://data.api.telcofy.ai/data-agg/status/601e135e-1438-4c02-ae48-a4af6a9457f9 \
   -H "x-api-key: $API_KEY"
 ```
 
 Example response:
 
 ```json
-{"job_id":"12bd1616-002b-43c5-bc0c-422a2110c481","status":"completed","progress":100,"created_at":"2026-10-29T13:35:27.653Z","start_time":"2026-10-29T13:35:28.051Z","end_time":"2026-10-29T13:35:28.120Z","estimated_completion":null,"error":null}
+{"job_id": "601e135e-1438-4c02-ae48-a4af6a9457f9", "status": "completed", "progress": 100, "created_at": "2026-11-04T11:24:01.674Z", "start_time": "2026-11-04T11:24:01.736Z", "end_time": "2026-11-04T11:24:01.797Z", "estimated_completion": null, "error": null}
 ```
 
 In the status response, `created_at`, `start_time` and `end_time` describe the **job's**
@@ -854,28 +873,43 @@ you requested.
 **Step 3 — Fetch results:**
 
 ```bash
-curl -s -X GET https://dev.data.api.telcofy.ai/data-agg/results/12bd1616-002b-43c5-bc0c-422a2110c481 \
+curl -s -X GET https://data.api.telcofy.ai/data-agg/results/601e135e-1438-4c02-ae48-a4af6a9457f9 \
   -H "x-api-key: $API_KEY"
 ```
 
-Example response (`full=false` — inline preview, shortened):
+Example response (`full=false`, inline preview; one of the six rows shown). With no
+`measure`, every measure of the table comes back:
 
 ```json
 {
-  "job_id": "12bd1616-002b-43c5-bc0c-422a2110c481",
+  "job_id": "601e135e-1438-4c02-ae48-a4af6a9457f9",
   "status": "completed",
   "country_code": "EST",
   "preview": [
     {
-      "batch_date": "2025-10-11",
-      "day_type": "saturday",
-      "time_bucket": "2025-10-11T00:00:00.000Z",
-      "geo_id": "1kmN4111E5311",
-      "geo_type": "grid_1000m",
-      "k5_tier": "1km",
-      "sum_unique_people": 17,
-      "stays_count": 19,
-      "arrivals": null
+      "batch_date": "2025-10-14",
+      "day_type": "weekday",
+      "time_bucket": "2025-10-14T00:00:00.000Z",
+      "geo_id": "250mN16491E20623",
+      "geo_type": "grid_250m",
+      "geo_name": null,
+      "k5_tier": "250m",
+      "sum_unique_people": 539,
+      "stays_count": 582,
+      "stays_dwell_minutes": 227740.79694941867,
+      "arrivals": 582,
+      "average_distance": 8.791914658827116,
+      "average_travel_time": 28.674269260613997,
+      "average_visit_length": 391.30721125329666,
+      "arrivals_car_modelled": 429,
+      "average_travel_time_car_modelled": 24.613988989750563,
+      "arrivals_walk_modelled": 70,
+      "average_travel_time_walk_modelled": 39.29924813115171,
+      "arrivals_bike_modelled": 8,
+      "average_travel_time_bike_modelled": 36.39692775439471,
+      "arrivals_transit_modelled": 75,
+      "average_travel_time_transit_modelled": 41.158675224781035,
+      "arrivals_other_modelled": 0
     }
   ],
   "truncated": false
@@ -883,13 +917,29 @@ Example response (`full=false` — inline preview, shortened):
 ```
 
 When the job was created with `full=true`, request `GET /data-agg/results/{jobId}?full=true`
-to get the Cloud Storage path of the export instead of an inline preview:
+to get the export instead of an inline preview. `files` holds signed download links, valid
+until `urls_expire_at` (15 minutes); request the results again for fresh links. Each file is
+newline-delimited JSON, one row per line, with the same columns as the preview:
 
 ```json
-{"job_id":"12bd1616-002b-43c5-bc0c-422a2110c481","status":"completed","country_code":"EST","http_path":"https://console.cloud.google.com/storage/browser/telcofy-user-data/results/<USER_ID>/12bd1616-002b-43c5-bc0c-422a2110c481/<export>"}
+{
+  "job_id": "59c36453-87ab-48cd-80fd-1af0e45780b0",
+  "status": "completed",
+  "country_code": "EST",
+  "files": [
+    {
+      "name": "000000000000.json",
+      "size": 4459,
+      "url": "https://storage.googleapis.com/telcofy-estonia-delivery-results/..."
+    }
+  ],
+  "urls_expire_at": "2026-11-04T11:39:06.982Z",
+  "gcs_folder": "gs://telcofy-estonia-delivery-results/results/<USER_ID>/59c36453-87ab-48cd-80fd-1af0e45780b0/activities_daily_est/",
+  "http_path": "https://console.cloud.google.com/storage/browser/telcofy-estonia-delivery-results/results/<USER_ID>/59c36453-87ab-48cd-80fd-1af0e45780b0/activities_daily_est"
+}
 ```
 
-Download the exported files from Cloud Storage using the OAuth token retrieved in [Section 1](#1-download-cloud-storage-exports).
+Download each file from its `url`, or read the `gcs_folder` with the OAuth token from [Section 1](#1-download-cloud-storage-exports).
 
 `GET /data-agg/jobs` lists your jobs with their parameters, `status` and `http_path`.
 
