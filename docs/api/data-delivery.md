@@ -800,79 +800,38 @@ by `band` over the cells and roles. Arrivals add up across cells. `people` does 
 someone seen in two cells counts once in each.
 
 For the six cells on 14 October 2025 this gives Tallinn 4,272 of 5,467 arrivals (78.1 %),
-then Rae vald 320, Viimsi vald 143, Jõelähtme vald 113, Saue vald 95 and Maardu linn 83.
+then Rae vald 320 and Viimsi vald 143.
 
-**How far do visitors travel?** Ask for `distance` and `work`. With one distribution and one
-role named, `measure` and `role` are left out of the rows, and so is `band_name` (it equals
-`band`). The first rows for the commuters of cell `250mN16491E20623` (three of the first cell's eight bands):
+With one distribution and one role named, `measure`, `role` and `band_name` are left out of the
+rows. A `distance` row for the commuters (`"role": "work"`) of one cell:
 
 ```json
-{
-  "preview": [
-    { "batch_date": "2025-10-14", "day_type": "weekday", "time_bucket": "2025-10-14T00:00:00.000Z",
-      "geo_id": "250mN16491E20623", "band": "0-1 km", "band_min": 0, "band_max": 1, "unit": "km",
-      "people": 24, "arrivals": 24 },
-    { "batch_date": "2025-10-14", "day_type": "weekday", "time_bucket": "2025-10-14T00:00:00.000Z",
-      "geo_id": "250mN16491E20623", "band": "1-2 km", "band_min": 1, "band_max": 2, "unit": "km",
-      "people": 43, "arrivals": 43 },
-    { "batch_date": "2025-10-14", "day_type": "weekday", "time_bucket": "2025-10-14T00:00:00.000Z",
-      "geo_id": "250mN16491E20623", "band": "2-5 km", "band_min": 2, "band_max": 5, "unit": "km",
-      "people": 210, "arrivals": 215 }
-  ],
-  "truncated": false
-}
+{ "batch_date": "2025-10-14", "day_type": "weekday", "time_bucket": "2025-10-14T00:00:00.000Z",
+  "geo_id": "250mN16491E20623", "band": "2-5 km", "band_min": 2, "band_max": 5, "unit": "km",
+  "people": 210, "arrivals": 215 }
 ```
 
-(Shortened: the six cells hold 46 such rows in all.) The open-ended last band has `band_max: null` (`100+ km`).
+The last band is open-ended (`100+ km`, `band_max: null`).
 
-**Privacy.** The k = 5 check applies to the area and bucket, as for `activities`. Within a
-published area the bands add up to its arrivals (each of the five distributions of
-`250mN16491E20623` sums to its 582 arrivals), so a single band can hold fewer than 5 people,
-down to 1.
-
-**Sum arrivals, not people, across cells.** `arrivals` adds up across cells, roles and bands.
-`people` counts a person once per cell, role and band, so the same person appears in several
-rows and the sum overstates the unique people. For unique people in a larger area, ask
-`activities` for that area.
-
-**Preview limit and `truncated`.** A preview returns at most 100 rows, and `"truncated": true`
-says there are more. For the six cells on 14 October 2025 (daily, all roles) `distance` has
-exactly 100 rows, so it is not cut, and `origin_lau` has 218 (131 with `"role": "work"`).
-Use `full: true` to get every row.
-
-**Every row as one CSV.** Submit the job with `"full": true`, wait until its status is
-`completed`, then download one CSV instead of the signed NDJSON files:
+- **Privacy.** The k = 5 check applies to the area and bucket, so a single band can hold fewer
+  than 5 people. The bands of an area add up to its arrivals.
+- **Sum arrivals, not people.** `arrivals` adds up across cells, roles and bands. `people` counts
+  a person once per cell, role and band, so summing it overstates unique people.
+- **Preview and `truncated`.** A preview returns at most 100 rows; `"truncated": true` means
+  there are more (the six cells have 218 `origin_lau` rows).
+- **Every row as one CSV.** Submit with `"full": true`, wait for `completed`, then download:
 
 ```bash
-curl -s -X GET https://data.api.telcofy.ai/data-agg/results/$JOB_ID/csv \
+curl -s https://data.api.telcofy.ai/data-agg/results/$JOB_ID/csv \
   -H "x-api-key: $API_KEY" -o origins.csv
 ```
 
-The CSV is UTF-8 with a byte-order mark and CRLF line ends, and is streamed. Its header is the
-job's columns, including a column that is empty in every row. It returns `409` until the export
-has finished. The first lines of an `origin_lau` export for the six cells, which has 218 data
-rows (the preview holds only 100):
+The CSV is UTF-8 with a byte-order mark, and its header is the job's columns. The route returns
+`409` until the export has finished.
 
-```text
-batch_date,day_type,time_bucket,geo_id,role,band,band_name,people,arrivals,geo_type,measure
-2025-10-14,weekday,2025-10-14T00:00:00+00:00,250mN16491E20623,work,EE_2_0141,Anija vald,2,2,grid_250m,origin_lau
-```
-
-**The same in the web app.** In Activities, open a saved area (for example the six cells of
-Ülemiste City), pick the day, then choose a tab:
-
-- **Totals** shows one measure per area (unique people, arrivals, average distance and so on).
-  **Distributions** shows one distribution (where visitors come from, travel distance, travel
-  time, visit length, trip purpose) and optionally one role.
-- Choose **Daily** or **Hourly** and select **Submit Job**. The result badge reads `100 results`,
-  or `First 100 rows (preview limit)` with a warning that only part of the rows are shown.
-- **Preview** opens the rows. For Where visitors come from it starts with Top origins: the
-  arrivals summed over the selected cells, with each origin's share.
-- **Export all rows (CSV)** downloads every row (129 for the hourly totals of these cells, 218
-  for where visitors come from). **View Dashboard** shows the day's headline figures and
-  distributions.
-- If you change the measure, distribution, role, day or resolution after submitting, the page
-  says "What is selected has changed" and keeps the earlier results until you submit again.
+**In the web app**, open a saved area in Activities, choose **Totals** or **Distributions** (a
+distribution and optionally a role), pick the day and **Submit Job**. **Preview** shows the rows,
+with Top origins for where visitors come from; **Export all rows (CSV)** downloads every row.
 
 #### Asynchronous data aggregation endpoint (POST `/data-agg`)
 
