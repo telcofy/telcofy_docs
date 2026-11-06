@@ -799,6 +799,40 @@ Add `"role": "work"` for commuters only. To rank origins for the whole area, sum
 by `band` over the cells and roles. Arrivals add up across cells. `people` does not, because
 someone seen in two cells counts once in each.
 
+For the six cells on 14 October 2025 this gives Tallinn 4,272 of 5,467 arrivals (78.1 %),
+then Rae vald 320 and Viimsi vald 143.
+
+With one distribution and one role named, `measure`, `role` and `band_name` are left out of the
+rows. A `distance` row for the commuters (`"role": "work"`) of one cell:
+
+```json
+{ "batch_date": "2025-10-14", "day_type": "weekday", "time_bucket": "2025-10-14T00:00:00.000Z",
+  "geo_id": "250mN16491E20623", "band": "2-5 km", "band_min": 2, "band_max": 5, "unit": "km",
+  "people": 210, "arrivals": 215 }
+```
+
+The last band is open-ended (`100+ km`, `band_max: null`).
+
+- **Privacy.** The k = 5 check applies to the area and bucket, so a single band can hold fewer
+  than 5 people. The bands of an area add up to its arrivals.
+- **Sum arrivals, not people.** `arrivals` adds up across cells, roles and bands. `people` counts
+  a person once per cell, role and band, so summing it overstates unique people.
+- **Preview and `truncated`.** A preview returns at most 100 rows; `"truncated": true` means
+  there are more (the six cells have 218 `origin_lau` rows).
+- **Every row as one CSV.** Submit with `"full": true`, wait for `completed`, then download:
+
+```bash
+curl -s https://data.api.telcofy.ai/data-agg/results/$JOB_ID/csv \
+  -H "x-api-key: $API_KEY" -o origins.csv
+```
+
+The CSV is UTF-8 with a byte-order mark, and its header is the job's columns. The route returns
+`409` until the export has finished.
+
+**In the web app**, open a saved area in Activities, choose **Totals** or **Distributions** (a
+distribution and optionally a role), pick the day and **Submit Job**. **Preview** shows the rows,
+with Top origins for where visitors come from; **Export all rows (CSV)** downloads every row.
+
 #### Asynchronous data aggregation endpoint (POST `/data-agg`)
 
 For larger areas or time ranges, or when you want the full result set exported to Cloud
