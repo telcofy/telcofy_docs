@@ -491,13 +491,6 @@ catalogue, returned as they are. Everything it returns is listed by
 exist before you query. `country_code` is `NOR`, `EST`, `LAT` or `LTU` (`NO`, `EE`, `LV`
 and `LT` are accepted too) and defaults to `NOR`.
 
-> **Breaking change (November 2026):** catalogue 1.0 replaces the earlier `/data-agg`
-> schema, with no mapping back to it. Geo types `admin_level_2` / `admin_level_4`, numeric
-> Norwegian IDs, EHAK codes, the `type` column and the measures `stays_devices`,
-> `sum_people_home`, `sum_people_work`, `sum_people_visitors` and `trips_car` (and the other
-> unsuffixed modes, now `*_modelled`) are gone and return `400`. Jobs created before the
-> switch can no longer be previewed. See [Migrating from the earlier schema](#migrating-from-the-earlier-schema).
-
 #### Geo types and IDs
 
 Each request reads one catalogue table, chosen from `agg_type`, the geo type and
@@ -527,6 +520,24 @@ Each country has its own admin levels:
 - `geo_ids` (and `origin_geo_ids` / `destination_geo_ids` for ODM) may be left out to get
   every area of the geo type.
 - Any other geo type for a country returns `400` with the supported values.
+
+> **INSPIRE grid (Estonia, Latvia, Lithuania).** The grid cells follow the European INSPIRE
+> statistical grid: square cells in the ETRS89 Lambert Azimuthal Equal-Area projection
+> ([EPSG:3035](https://epsg.io/3035)), aligned on whole multiples of the cell size. A cell ID
+> is the cell size followed by the northing and easting of the cell's lower-left corner,
+> divided by the cell size. `250mN16492E20623` is the 250 m cell whose lower-left corner is
+> at N 4 123 000 m, E 5 155 750 m (16492 × 250 and 20623 × 250), in Ülemiste City, Tallinn.
+> `1kmN4111E5311` is the 1 km cell at N 4 111 000 m, E 5 311 000 m. The cell polygon is that
+> corner plus the cell size in each direction, so you can draw any cell from its ID alone.
+>
+> Eurostat publishes the same grid with population and NUTS codes as
+> [GISCO grids](https://ec.europa.eu/eurostat/web/gisco/geodata/grids) (1, 2, 5, 10, 20, 50 and
+> 100 km; GeoPackage, CSV and Parquet; files at
+> [gisco-services.ec.europa.eu/grid](https://gisco-services.ec.europa.eu/grid/), for example
+> `grid_1km_surf.gpkg`). GISCO writes the ID in its long form: `CRS3035RES1000mN4111000E5311000`
+> is Telcofy's `1kmN4111E5311`. For 250 m and 500 m cells, which GISCO does not publish, use
+> the [Eurostat GridMaker](https://github.com/eurostat/GridMaker) or build the polygons from
+> the IDs as above.
 
 #### Rows, measures and privacy
 
