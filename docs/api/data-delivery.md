@@ -544,6 +544,14 @@ Each country has its own admin levels:
   as `1km`, `hour` (flow), or `suppressed`. A `null` measure means withheld or not available
   for that row, never zero. When you ask for every area (no `geo_ids`), rows with `geo_id`
   `suppressed` hold what was withheld from the finer areas.
+- **Grid cells nest.** The grid sizes stack: four 250 m cells make a 500 m cell, four 500 m
+  cells a 1 km cell, 25 of those a 5 km cell and four 5 km cells a 10 km cell. Every row is a full total for its own cell, so a
+  500 m row already includes the people in its 250 m cells. A finer cell is published only
+  where it passes the k = 5 check, so a 500 m cell may have all, some or none of its 250 m
+  cells published, and those that are published need not add up to it. A request returns only
+  the cells of the `geo_type` and `geo_ids` you send: `grid_500m` with one 500 m ID gives one
+  row, never its 250 m cells. Do not add up rows of different sizes that overlap; that counts
+  the same people twice.
 - **Previews** return at most 100 rows with `"truncated": true` when there are more. Use an
   asynchronous job with `full=true` to export every row.
 
